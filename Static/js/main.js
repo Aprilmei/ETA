@@ -4,12 +4,12 @@ function initMap() {
     
     map = new google.maps.Map(document.getElementById('map'), {
     center: myLatLng,
-    zoom: 12
+    zoom: 10
 });
 }
 
 function showStops() {
-    $.getJSON("/data/stops.json", function(data) {
+    $.getJSON("stops.json", function(data) {
         var stops = data;
         var j = Object.keys(stops).length;
         console.log(j);
@@ -64,6 +64,45 @@ function showRoute(origin, dest) {
         
     });
 }
+
+function route7Markers() {
+    var route7Stops = ['3219', '2040', '2041', '3220', '2043', '2044', '2045', '2045', '2046', '6082', '3205', '3206', '3207', '3208', '3209', '3210', '4981', '3211', '3212', '3213', '3214', '3215', '3216', '3217', '3218', '3219', '3220', '3221', '4982'];
+    
+    var route7Arr = [];
+    
+    $.getJSON("/data/stops.json", function(data) {
+        var stops = data;
+        console.log("yo!");
+        for (var i = 0; i < route7Stops.length; i++) {
+            console.log("in the first loop");
+            var stop_id = route7Stops[i];
+            for (var j = 0; j < Object.keys(stops).length;  j++) {
+                console.log("in the second loop");
+                if (stops[j].stop_id.endsWith(stop_id)) {
+                    console.log("in the if");
+                    route7Arr.push(stops[i]);
+                };
+            };
+        };
+        
+        console.log(route7Arr);
+    
+        for (var i = 0; i < route7Arr.length; i++) {
+            console.log("in the third loop");
+            var marker = new google.maps.Marker({
+                position: {
+                    lat: route7Arr[i]["stop_lat"],
+                    lng: route7Arr[i]["stop_lon"]
+                },
+                map: map,
+                title: route7Arr[i]["stop_name"],
+                stop_number: route7Arr[i]["stop_id"]
+            });
+        };
+    });
+}
+
+//route7Markers();
 
 
 function predictTime(route, origin, dest, day, time) {
