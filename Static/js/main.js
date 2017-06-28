@@ -33,16 +33,16 @@ function showRoute(origin, dest) {
         for (var i = 0; i < Object.keys(stops).length; i++) {
             if (stops[i].stop_id.endsWith(origin)) {
                 var originStop = stops[i];
-                break;
+                break; // short circuit for efficiency
             }
         };
         for (var i = 0; i < Object.keys(stops).length; i++) { 
             if (stops[i].stop_id.endsWith(dest)) {
                 var destStop = stops[i];
-                break;
+                break; // short circuit for efficiency
             }
         };
-        // display origin and destination markers on map
+        // display origin and destination markers on map - 2017 stops
         var marker = new google.maps.Marker({
             position: {
                 lat: originStop["stop_lat"],
@@ -63,6 +63,8 @@ function showRoute(origin, dest) {
         });
         
     });
+    
+    
 }
 
 function route7Markers() {
