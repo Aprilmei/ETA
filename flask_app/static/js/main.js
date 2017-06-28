@@ -9,7 +9,7 @@ function initMap() {
 }
 
 function showStops() {
-    $.getJSON("stops.json", function(data) {
+    $.getJSON("data/stops.json", function(data) {
         var stops = data;
         var j = Object.keys(stops).length;
         console.log(j);
@@ -28,7 +28,7 @@ function showStops() {
 }
 
 function showRoute(origin, dest) {
-    $.getJSON("/data/stops.json", function(data) {
+    $.getJSON("data/stops.json", function(data) {
         var stops = data;
         for (var i = 0; i < Object.keys(stops).length; i++) {
             if (stops[i].stop_id.endsWith(origin)) {
@@ -72,7 +72,7 @@ function route7Markers() {
     
     var route7Arr = [];
     
-    $.getJSON("/data/stops.json", function(data) {
+    $.getJSON("data/stops.json", function(data) {
         var stops = data;
         console.log("yo!");
         for (var i = 0; i < route7Stops.length; i++) {
