@@ -9,11 +9,14 @@
   <link href="style.css" rel="stylesheet" type="text/css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="js/main.js" type="text/javascript"></script>
-    <!--<script src="{{ url_for('static', filename='js/main.js') }}" type="text/javascript">-->
-</script>
+  <!--<script src="js/main.js" type="text/javascript"></script>-->
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="text/javascript"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOHmIoluu_RROTARx0AHofNWZbLHg8yxU&callback=initMap" async defer></script>
   <script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js" type="text/javascript"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+
 </head>
     <body>
         <!-- Main div containing the whole page -->
@@ -60,33 +63,50 @@
                 <div class="col-md-8"><div id="map"></div></div>
                 <div class="col-md-4"><h4>Route Preferences</h4>
                     <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
-                        <label for="route">Route:</label>
-                        <select class="form-control" id="route">
-                            <option value="7">7</option>
-                        </select>
 
                         <label for="origin">Origin:</label>
                         <select class="form-control" id="origin">
-                            <option value="1174">Stop 1174: Mountjoy Square, Gardiner Place</option>
+                            <option disabled="disabled" selected="selected">
+				            Select your origin
+			                </option>
                         </select>
                         
                         <label for="dest">Destination:</label>
                         <select class="form-control" id="dest">
-                            <option value="7639">Stop 7639: Brides Glen, Luas Station</option>
+                            <option disabled="disabled" selected="selected">
+				            Select your destination
+			                </option>
                         </select>
+
+                       <label for="route">Route:</label>
+                        <select class="form-control" id="route">
+                           <option disabled="disabled" selected="selected">
+				            Select a route
+			                </option>
+                            <option value="7">7</option>
+                        </select>
+
                         <label for="day">Day:</label>
                         <select class="form-control" id="day">
-                            <option value="Monday">Monday</option>
+                            <option disabled="disabled" selected="selected">
+				            Select a day
+			                </option>
+                            <option value="2">Monday</option>
+                            <option value="3">Tuesday</option>
+                            <option value="4">Wednesday</option>
+                            <option value="5">Thursday</option>
+                            <option value="6">Friday</option>
+                            <option value="7">Saturday</option>
+                            <option value="1">Sunday</option>
                         </select>
-                        
-                        <label for="time">Time:</label>
+
+                        <label for="hour">Time:</label>
                         <!-- What about using the terminus departures? -->
-                        <select class="form-control" id="time">
-                            <option value="07">07:00</option>
-                            <option value="13">13:00</option>
-                            <option value="18">18:00</option>
-                            <option value="21">21:00</option>
+                        <select class="form-control" id="hour">
                         </select><br>
+                        <select class="form-control" id="minute">
+                        </select><br>
+
                         <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                     </div>       
                 </div>
@@ -97,5 +117,69 @@
     </body>
 <footer>
     <p>This website was developed by<br>Andrew Cameron<br>Pamela Kelly<br>Conan Martin<br>April Mei<br>2017</p>
-</footer> 
+</footer>
+<script>
+    function pop_origin_stops() {
+    var origin_drop = $('#origin');
+	    $.getJSON("http://127.0.0.1:5000/stops", function(data) {
+		    if ('stops' in data) {
+			    var stops = data.stops;
+			    console.log('stops', stops);
+                _.forEach(stops, function(data) {
+   				origin_drop.append($('<option>', {
+					value: data.stop_id,
+   					text: data.stop_address + " - Stop No: " + data.stop_id
+  			    }, '</option>'));
+                })
+            }
+        })
+    };
+
+    function pop_destination_stops(origin_id) {
+    var destination_drop = $('#dest');
+	    $.getJSON("http://127.0.0.1:5000/destination_stops/" + origin_id, function(data) {
+		    if ('stops' in data) {
+			    var stops = data.stops;
+			    console.log('stops', stops);
+                _.forEach(stops, function(data) {
+   				destination_drop.append($('<option>', {
+					value: data.stop_id,
+   					text: data.stop_address + " - Stop No: " + data.stop_id
+  			    }, '</option>'));
+                })
+            }
+        })
+    };
+
+
+    function time_picker(){
+    var hour_list = document.getElementById('hour');
+    var minute_list = document.getElementById('minute');
+
+    for (var i = 0; i <= 24; i++){
+        hour_list.options[hour_list.options.length] = new Option(i, i);
+        }
+
+    for (var i = 0; i <= 55; i += 5){
+        minute_list.options[minute_list.options.length] = new Option(i, i);
+        }
+
+    }
+
+    $("#origin").change(function() {
+	pop_destination_stops($("#origin").val());
+    });
+
+    window.onload = function(){
+    pop_origin_stops();
+    time_picker();
+    }
+
+    $(document).ready(function() {
+  $('#origin').select2();
+  $('#dest').select2();
+
+});
+
+</script>
 </html>
