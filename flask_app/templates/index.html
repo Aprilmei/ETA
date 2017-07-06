@@ -83,7 +83,6 @@
                            <option disabled="disabled" selected="selected">
 				            Select a route
 			                </option>
-                            <option value="7">7</option>
                         </select>
 
                         <label for="day">Day:</label>
@@ -151,6 +150,22 @@
         })
     };
 
+    function pop_routes(origin_id, destination_id) {
+    var routes_drop = $('#route');
+	    $.getJSON("http://127.0.0.1:5000/possible_routes/" + origin_id + "/" + destination_id, function(data) {
+		    if ('routes' in data) {
+			    var routes = data.routes;
+			    console.log('routes', routes);
+                _.forEach(routes, function(data) {
+   				routes_drop.append($('<option>', {
+					value: data.journey_pattern,
+   					text: data.journey_pattern
+  			    }, '</option>'));
+                })
+            }
+        })
+    };
+
 
     function time_picker(){
     var hour_list = document.getElementById('hour');
@@ -165,19 +180,70 @@
         }
 
     }
+    function remove_options(id, which){
+        var list = document.getElementById(id);
+        for (var i = list.length - 1; i >= 0 ; i--){
+            list.remove(i);
+        }
+        var option = document.createElement("option");
+        if (id === 'dest'){
+            option.text = 'Select a destination';
+        }
+        else{
+            option.text = "Select a " + id;
+        }
+        option.disabled = false;
+        list.add(option);
+        if (which === 'origin') {
+            pop_destination_stops($("#origin").val());
+        }
+        else if (which === 'dest'){
+            pop_routes($("#origin").val(), $("#dest").val());
+        }
+    }
 
     $("#origin").change(function() {
-	pop_destination_stops($("#origin").val());
+        remove_options('dest', 'origin');
+        remove_options('route', 'ignore');
+        });
+
+    $("#dest").change(function() {
+        remove_options('route', 'dest');
     });
+
+    function get_weather() {
+        var xmlhttp = new XMLHttpRequest();
+        var url = "http://api.openweathermap.org/data/2.5/forecast?id=7778677&APPID=4cd167bc85dff937818ea9a5eb6fa550&units=metric";
+
+        xmlhttp.onreadystatechange = function(){
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var weather_json = JSON.parse(xmlhttp.responseText);
+            apply_weather(weather_json);
+        }
+        };
+
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+
+}
+
+    function apply_weather(data){
+        var list = data.list;
+	    console.log('list', list);
+
+    }
+
 
     window.onload = function(){
     pop_origin_stops();
     time_picker();
-    }
+    get_weather();
+    };
+
 
     $(document).ready(function() {
-  $('#origin').select2();
-  $('#dest').select2();
+    $('#origin').select2();
+    $('#dest').select2();
 
 });
 
