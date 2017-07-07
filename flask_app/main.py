@@ -25,17 +25,6 @@ def connect_to_database():
 def hello():
 	return render_template("index.html")
 
-@app.route("/routes")
-def get_routes():
-	engine = connect_to_database()
-	conn = engine.connect()
-	routes = []
-	rows = conn.execute("SELECT * FROM routes;")
-	for row in rows:
-		routes.append(dict(row))
-
-	return jsonify(routes=routes)
-
 
 @app.route("/stops")
 def get_stops():
