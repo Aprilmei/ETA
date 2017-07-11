@@ -5,9 +5,16 @@ Author @Conan Martin
 
 from flask import Flask, render_template, jsonify
 from sqlalchemy import create_engine
+from flask_cors import CORS, cross_origin
+# from geopy.distance import distance
+import pickle
+import sklearn
+import scipy
+import pandas as pd
 
 
 app = Flask(__name__, static_url_path='')
+CORS(app)
 
 
 def connect_to_database():
@@ -22,11 +29,13 @@ def connect_to_database():
 
 
 @app.route("/")
+@cross_origin()
 def hello():
 	return render_template("index.html")
 
 
 @app.route("/stops")
+@cross_origin()
 def get_stops():
 	engine = connect_to_database()
 	conn = engine.connect()
@@ -39,6 +48,7 @@ def get_stops():
 
 
 @app.route("/destination_stops/<int:stop_id>")
+@cross_origin()
 def get_destination_stops(stop_id):
 	engine = connect_to_database()
 	conn = engine.connect()
@@ -50,6 +60,7 @@ def get_destination_stops(stop_id):
 	return jsonify(stops=stops)
 
 @app.route("/possible_routes/<int:origin_id>/<int:destination_id>")
+@cross_origin()
 def get_possible_routes(origin_id, destination_id):
 	engine = connect_to_database()
 	conn = engine.connect()
@@ -59,6 +70,45 @@ def get_possible_routes(origin_id, destination_id):
 		routes.append(dict(row))
 
 	return jsonify(routes=routes)
+
+@app.route("/predict_time/<int:origin_id>/<int:destination_id>")
+@cross_origin()
+def predict_time(origin_id, destination_id):
+	stop_dist = {"44": 3432, "45": 3809, "46": 4603, "47": 4501, "48": 4665, "49": 4986, "50": 5162, "51": 5228, "52": 8648,
+	 "119": 3096, "213": 2314, "214": 2694, "226": 3, "227": 849, "228": 271, "229": 474, "230": 1050, "231": 1318,
+	 "265": 6338, "271": 6903, "340": 7330, "350": 7772, "351": 8277, "352": 8525, "353": 8772, "354": 8872,
+	 "355": 9075, "356": 9494, "357": 9907, "372": 10308, "373": 10635, "374": 10717, "375": 10949, "376": 11463,
+	 "377": 11775, "378": 11990, "380": 12957, "390": 9964, "1641": 1701, "1642": 2079, "2804": 11190, "4432": 2901}
+
+	# engine = connect_to_database()
+	# conn = engine.connect()
+	# coordinates = []
+	# rows = conn.execute("SELECT latitude, longitude FROM bus_stops WHERE stop_id = {} OR stop_id = {};".format(origin_id, destination_id))
+	# for row in rows:
+	# 	coordinates.append(dict(row))
+
+	loaded_model = pickle.load(open('pickle_jar/sk_linear_model2', 'rb'))
+
+	def get_time(distance):
+		params = [{
+			'Distance_Terminal': distance,
+		}]
+
+		df = pd.DataFrame(params)
+
+		estimated_time = loaded_model.predict(df)
+		return estimated_time[0]
+	origin_time = get_time(stop_dist[str(origin_id)])
+	dest_time = get_time(stop_dist[str(destination_id)])
+
+	# print("Time to start:", origin_time)
+	# print("Time to destination:", dest_time)
+	time = []
+	time_dif = dest_time - origin_time
+	time.append(time_dif)
+	# print("Time between stops is: ", time)
+
+	return jsonify(time=time)
 
 
 if __name__ == '__main__':
