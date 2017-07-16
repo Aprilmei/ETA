@@ -1,2 +1,3 @@
 # ETA
-# Summer Project
+# UCD Summer Project
+# Team ETA 
