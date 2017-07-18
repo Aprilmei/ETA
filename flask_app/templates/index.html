@@ -178,6 +178,17 @@
         })
     }
 
+    function demo_model(origin_id, destination_id){
+        var time_p = $('#predicted_time_p');
+        $.getJSON("http://127.0.0.1:5000/predict_time/" + origin_id + "/" + destination_id, function(data) {
+            if ('time' in data) {
+            var time = data.time;
+            console.log('time', time[0]);
+            time_p.append(
+                Math.ceil(time[0]/60) + " minutes"
+            )
+        }
+        });}
 
 //    function time_picker(){
 //    var hour_list = document.getElementById('hour');
@@ -247,6 +258,7 @@
     }
 
 
+
     window.onload = function(){
     pop_origin_stops();
     get_weather();
@@ -259,9 +271,9 @@
 
 });
 
-    function predictTime(route, origin, dest, day, time) {
-    predictedTravelTime = "Predictions Coming Soon!";
-}
+//    function predictTime(route, origin, dest, day, time) {
+//    predictedTravelTime = "Predictions Coming Soon!";
+//}
 
 function travelTime() {
 //    var results = document.getElementById("preferences");
@@ -279,17 +291,16 @@ function travelTime() {
             weather_at_time = weather_list[x];
         }
     }
-    console.log("Weather at time:", weather_at_time);
+//    console.log("Weather at time:", weather_at_time);
 //    console.log(route, origin, dest, day, time);
-
-    predictedTime = predictTime(route, origin, dest, day, time);
 
     var weather_img = 'images/weather_example.png';
     var i, out = "";
-    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p>" + predictedTravelTime + "</p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
+    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest);
+    demo_model(origin, dest);
 }
 
 
