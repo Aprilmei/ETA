@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>ETA Predicting Travel Time for Dublin Bus Passengers</title>
+    <!-- References: W3Schools Bootstrap Tutorial -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js" type="text/javascript"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/flatpickr" type="text/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOHmIoluu_RROTARx0AHofNWZbLHg8yxU&callback=initMap" async
+        defer></script>
+
+    <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet" type="text/css">
+    <script src="{{ url_for('static', filename='js/index.js') }}" type="text/javascript"></script>
+</head>
+
+<body>
+    <!-- Main div containing the whole page -->
+    <div class="container">
+        <!-- Jumbotron containg site title and tagline -->
+        <div class="jumbotron">
+            <h1 class="page-header">ETA<br>
+                <p>Delivering Accurate Travel Times to Dublin Bus Users</p>
+            </h1>
+        </div>
+        <div>
+            <!-- Navigation Bar - Collapsible for Mobile Optimisation -->
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        <a class="navbar-brand" href="#">ETA</a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="myNavbar">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#">Route Planner</a>
+                                <li><a href="#">Timetables</a></li>
+                                <li><a href="#">Contact</a></li>
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Login</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <!-- Very basic first prototype
+
+            Only uses the number 7 from terminus to terminus on a Monday
+
+            Estimate times taken from Dublin Bus Website for now - via a dummy csv
+            
+            -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="map"></div>
+                </div>
+                <div class="col-md-4">
+                    <h4>Route Preferences</h4>
+                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+
+                        <label for="origin">Origin:</label>
+                        <select class="form-control" id="origin">
+                            <option disabled="disabled" selected="selected">
+				            Select your origin
+			                </option>
+                        </select>
+
+                        <label for="dest">Destination:</label>
+                        <select class="form-control" id="dest">
+                            <option disabled="disabled" selected="selected">
+				            Select your destination
+			                </option>
+                        </select>
+
+                        <label for="route">Route:</label>
+                        <select class="form-control" id="route">
+                           <option disabled="disabled" selected="selected">
+				            Select a route
+			                </option>
+                        </select>
+
+                        <!--<label for="day">Day:</label>-->
+                        <!--<select class="form-control" id="day">-->
+                        <!--<option disabled="disabled" selected="selected">-->
+                        <!--Select a day-->
+                        <!--</option>-->
+                        <!--<option value="2">Monday</option>-->
+                        <!--<option value="3">Tuesday</option>-->
+                        <!--<option value="4">Wednesday</option>-->
+                        <!--<option value="5">Thursday</option>-->
+                        <!--<option value="6">Friday</option>-->
+                        <!--<option value="7">Saturday</option>-->
+                        <!--<option value="1">Sunday</option>-->
+                        <!--</select>-->
+
+                        <label for="date_time_selector">Date & Time:</label>
+                        <div id="date_time_select_container">
+                            <input id="date_time_selector" size="16" type="text">
+                        </div>
+
+                        <script>
+                            $("#date_time_selector").flatpickr({
+                                minDate: "today",
+                                enableTime: true,
+                                maxDate: new Date().fp_incr(7)
+                            }
+                            );
+                        </script>
+
+                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
+                    </div>
+                </div>
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+</body>
+<footer>
+    <p>This website was developed by<br>Andrew Cameron<br>Pamela Kelly<br>Conan Martin<br>April Mei<br>2017</p>
+</footer>
+<script>
+
+</script>
+
+</html>

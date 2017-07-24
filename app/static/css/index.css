@@ -1,0 +1,17 @@
+#map {
+    height: 400px;
+}
+            
+.jumbotron {
+    background-color: cadetblue;
+    color: white;
+    font-family: georgia;
+    padding: 5px;
+}
+            
+footer {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: cadetblue;
+    color: white;
+}
