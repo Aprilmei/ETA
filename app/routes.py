@@ -9,6 +9,7 @@ from db_tools import connect_to_database
 
 @app.route("/")
 def index():
+    print('connection received from X')
     return render_template("index.html")
 
 

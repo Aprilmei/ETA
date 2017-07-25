@@ -11,14 +11,16 @@ $(document).ready(function () {
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 53.3438, lng: -6.2546 },
+        center: {
+            lat: 53.3438,
+            lng: -6.2546
+        },
         zoom: 10
     });
 }
 
 function showStops() {
-    $.getJSON("data/stops.json", function (data) {
-        var stops = data;
+    $.getJSON("data/stops.json", function (stops) {
         var j = Object.keys(stops).length;
         console.log(j);
         for (var i = 0; i <= j; i++) {
