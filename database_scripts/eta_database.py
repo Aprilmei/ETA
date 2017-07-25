@@ -60,4 +60,4 @@ def main():
     static_timetables_table()
     populate_routes()
 
-eta_db = database_setup("db_password.txt", "eta.cb0ofqejduea.eu-west-1.rds.amazonaws.com", "3306", "eta", "eta")
+eta_db = database_setup("database.password", "eta.cb0ofqejduea.eu-west-1.rds.amazonaws.com", "3306", "eta", "eta")

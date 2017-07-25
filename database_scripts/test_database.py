@@ -2,7 +2,7 @@ import unittest
 
 from database import database_setup
 
-eta_db = database_setup("db_password.txt", "eta.cb0ofqejduea.eu-west-1.rds.amazonaws.com", "3306", "eta", "eta")
+eta_db = database_setup("database.password", "eta.cb0ofqejduea.eu-west-1.rds.amazonaws.com", "3306", "eta", "eta")
 
 class test_db_setup(unittest.TestCase):
     def test_engine(self):
