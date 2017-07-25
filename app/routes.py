@@ -9,7 +9,6 @@ from db_tools import connect_to_database
 
 @app.route("/")
 def index():
-    print('connection received from X')
     return render_template("index.html")
 
 
@@ -33,7 +32,11 @@ def get_destination_stops(stop_id):
     engine = connect_to_database()
     conn = engine.connect()
     stops = []
-    rows = conn.execute("select * from eta.bus_stops where stop_id in (select distinct stop_id from eta.routes where journey_pattern in (select journey_pattern from eta.routes where stop_id = {}) and stop_id != {}) order by stop_address;".format(stop_id, stop_id))
+    rows = conn.execute("select * from eta.bus_stops where stop_id in (select \
+                        distinct stop_id from eta.routes where journey_pattern \
+                        in (select journey_pattern from eta.routes where stop_id \
+                        = {}) and stop_id != {}) order by stop_address;"
+                        .format(stop_id, stop_id))
     for row in rows:
         stops.append(dict(row))
 
@@ -46,8 +49,10 @@ def get_possible_routes(origin_id, destination_id):
     engine = connect_to_database()
     conn = engine.connect()
     routes = []
-    rows = conn.execute("SELECT journey_pattern FROM eta.routes Where stop_id = {} and journey_pattern in ( SELECT journey_pattern FROM eta.routes Where stop_id = {});".format(
-        origin_id, destination_id))
+    rows = conn.execute("SELECT journey_pattern FROM eta.routes Where stop_id \
+                        = {} and journey_pattern in ( SELECT journey_pattern \
+                        FROM eta.routes Where stop_id = {});"
+                        .format(origin_id, destination_id))
     for row in rows:
         routes.append(dict(row))
 

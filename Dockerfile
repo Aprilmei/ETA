@@ -3,4 +3,4 @@ COPY ./app /app
 COPY requirements.txt /app
 WORKDIR /app
 RUN pip3 install -r ./requirements.txt
-CMD [ "python3", "main.py", "-h", "0.0.0.0"]
+CMD [ "python3", "main.py", "--environment", "production"]
