@@ -1,6 +1,6 @@
 import pickle
 
-from flask import render_template, jsonify
+from flask import render_template, jsonify, request
 from flask_cors import cross_origin
 
 from main import app
