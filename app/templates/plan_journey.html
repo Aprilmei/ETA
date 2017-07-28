@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="{{url_for('static', filename='js/plan_journey.js')}}"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfU_M1JL1ZqH4QMhd3OALLgjBC8l2tAdw&callback=initMap"></script>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Get the URL of the server (including trailing /) and attach it to the window object -->
+<script> window.onload = function() {
+    window.serverUrl = {{ request.script_root|tojson|safe }}
+} </script>
+
+<div id='map'></div>
+
+{% endblock %}
