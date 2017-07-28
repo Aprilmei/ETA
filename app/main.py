@@ -2,6 +2,15 @@ import argparse
 from flask import Flask
 import config
 
+import logging
+LOG_FORMAT = '%(levelname)s: %(module)s.%(funcName)s -> %(message)s'
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=LOG_FORMAT
+)
+log = logging.getLogger()
+
 
 def get_args():
     """User passes either 'dev' or 'production' at runtime to specify what config
@@ -42,4 +51,3 @@ if __name__ == '__main__':
     app.run(host=conf.listen_host,
             port=conf.listen_port,
             debug=conf.debug)
-
