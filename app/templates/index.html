@@ -51,7 +51,7 @@
                             <li class="active"><a href="#">Home</a></li>
                             <li><a href="#">Route Planner</a>
                                 <li><a href="#">Timetables</a></li>
-                                <li><a href="#">Contact</a></li>
+                                <li><a href="rti">Real Time Information</a></li>
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Login</a></li>
@@ -97,19 +97,6 @@
 			                </option>
                         </select>
 
-                        <!--<label for="day">Day:</label>-->
-                        <!--<select class="form-control" id="day">-->
-                        <!--<option disabled="disabled" selected="selected">-->
-                        <!--Select a day-->
-                        <!--</option>-->
-                        <!--<option value="2">Monday</option>-->
-                        <!--<option value="3">Tuesday</option>-->
-                        <!--<option value="4">Wednesday</option>-->
-                        <!--<option value="5">Thursday</option>-->
-                        <!--<option value="6">Friday</option>-->
-                        <!--<option value="7">Saturday</option>-->
-                        <!--<option value="1">Sunday</option>-->
-                        <!--</select>-->
 
                         <label for="date_time_selector">Date & Time:</label>
                         <div id="date_time_select_container">
@@ -141,7 +128,7 @@
 
 function pop_origin_stops() {
     var origin_drop = $('#origin');
-    $.getJSON("http://csi6220-4-vm1.ucd.ie/stops", function (data) {
+    $.getJSON("http://127.0.0.1:5000/stops/2012", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);
@@ -157,7 +144,7 @@ function pop_origin_stops() {
 
 function pop_destination_stops(origin_id) {
     var destination_drop = $('#dest');
-    $.getJSON("http://csi6220-4-vm1.ucd.ie/destination_stops/" + origin_id, function (data) {
+    $.getJSON("http://127.0.0.1:5000/destination_stops/" + origin_id, function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);
@@ -173,7 +160,7 @@ function pop_destination_stops(origin_id) {
 
 function pop_routes(origin_id, destination_id) {
     var routes_drop = $('#route');
-    $.getJSON("http://csi6220-4-vm1.ucd.ie/possible_routes/" + origin_id + "/" + destination_id, function (data) {
+    $.getJSON("http://127.0.0.1:5000/possible_routes/" + origin_id + "/" + destination_id, function (data) {
         if ('routes' in data) {
             var routes = data.routes;
             console.log('routes', routes);
@@ -187,9 +174,9 @@ function pop_routes(origin_id, destination_id) {
     })
 }
 
-function demo_model(origin_id, destination_id) {
+function call_model(origin_id, destination_id, weekday, hour, jpid) {
     var time_p = $('#predicted_time_p');
-    $.getJSON("http://csi6220-4-vm1.ucd.ie/predict_time/" + origin_id + "/" + destination_id, function (data) {
+    $.getJSON("http://127.0.0.1:5000/predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid, function (data) {
         if ('time' in data) {
             var time = data.time;
             console.log('time', time[0]);
@@ -217,7 +204,6 @@ function remove_options(id, which) {
     list.add(option);
     if (which === 'origin') {
         pop_destination_stops($("#origin").val());
-        console.log("hellow!!!")
     }
     else if (which === 'dest') {
         pop_routes($("#origin").val(), $("#dest").val());
@@ -266,8 +252,22 @@ function travelTime() {
     var date_time = document.getElementById('date_time_selector').value;
     var date_split = date_time.match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
     var timestamp = (new Date(date_split[1], date_split[2], date_split[3], date_split[4], date_split[5], '00').getTime() / 1000) - 2664000;
-    var day = date_time.slice(0, 10);
-    var time = date_time.slice(11);
+    var hour = parseInt(date_split[4]);
+    console.log(hour);
+    var date = new Date(timestamp*1000);
+    var day = date.getDay();
+    var weekday;
+    if (day === 0 || day === 1 || day === 6){
+        weekday = 1;
+    }
+    else{
+        weekday = 0;
+    }
+    var jpid = document.getElementById("route").value;
+    console.log(day);
+    console.log(jpid);
+    //var day = date_time.slice(0, 10);
+    //var time = date_time.slice(11);
     var weather_at_time = weather_list[0];
     for (var x = 1; x < weather_list.length; x++) {
         if (Math.abs(parseInt(weather_list[x]['dt']) - parseInt(timestamp)) < Math.abs(parseInt(weather_at_time['dt']) - parseInt(timestamp))) {
@@ -277,13 +277,12 @@ function travelTime() {
     //    console.log("Weather at time:", weather_at_time);
     //    console.log(route, origin, dest, day, time);
 
-    var weather_img = 'images/weather_example.png';
     var i, out = "";
     out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest);
-    demo_model(origin, dest);
+    call_model(origin, dest, weekday, hour, jpid);
 }
 
 
