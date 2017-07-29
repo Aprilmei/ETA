@@ -6,7 +6,7 @@ import pandas as pd
 
 from main import app
 from db_tools import connect_to_database
-import os
+from os.path import dirname
 
 
 @app.route("/")
@@ -62,7 +62,7 @@ def get_possible_routes(origin_id, destination_id):
 	return jsonify(routes=routes)
 
 
-@app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/jpid")
+@app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/<jpid>")
 @cross_origin()
 def predict_time(origin_id, destination_id, weekday, hour, jpid):
 #     stop_dist = {"44": 3432, "45": 3809, "46": 4603, "47": 4501, "48": 4665, "49": 4986, "50": 5162, "51": 5228, "52": 8648,
@@ -73,29 +73,47 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 
 	engine = connect_to_database()
 	conn = engine.connect()
-	coordinates = []
+	o_distance = {}
+	d_distance = {}
 
-	origin_distance = conn.execute("SELECT distance FROM routes WHERE stop_id = {} AND journey_pattern = {};".format(origin_id, jpid))
-	destination_distance = conn.execute("SELECT distance FROM routes WHERE stop_id = {} AND journey_pattern = {};".format(destination_id, jpid))
+	origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
+	destination_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND journey_pattern = {};".format(destination_id, "'" + jpid + "'"))
+
+	for o in origin_distance_list:
+		o_distance.update(dict(o))
+
+
+
+	for d in destination_distance_list:
+		d_distance.update(dict(d))
+
+	origin_distance = o_distance['position_on_route']
+	destination_distance = d_distance['position_on_route']
 
 	print("O distance", origin_distance)
 	print("D distance", destination_distance)
 	# for row in rows:
 	# 	coordinates.append(dict(row))
-	dir = os.getcwd()
-	print(dir)
+
+	# datadir = dirname(__file__) + '/data/'
+	#
+	# with open(datadir + 'sk_linear_model2') as f:
+	# 	loaded_model = pickle.load(f)
 
 	with open('data/sk_linear_model2', 'rb') as f:
 		loaded_model = pickle.load(f)
 
 	def get_time(distance, weekday, hour):
-		# params = [{
-        #     'Distance_Terminal': distance,
-        # }]
+		params = [{
+            'Distance_Terminal': distance,
+			'midweek': weekday,
+			'HourOfDay': hour,
+        }]
 
-		# df = pd.DataFrame(params)
+		df = pd.DataFrame(params)
 
-		estimated_time = loaded_model.predict(distance, weekday, hour)
+		estimated_time = loaded_model.predict(df)
+		print(estimated_time)
 		return estimated_time[0]
 
 	origin_time = get_time(origin_distance, weekday, hour)
