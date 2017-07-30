@@ -109,7 +109,6 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 	print("d_distance:", d_distance)
 
 
-
 	origin_distance = o_distance['position_on_route']
 	destination_distance = d_distance['position_on_route']
 
