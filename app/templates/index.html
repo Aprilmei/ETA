@@ -9,57 +9,57 @@
 
 {% block content %}
 
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8">
-                    <div id="map"></div>
-                </div>
-                <div class="col-md-4">
-                    <h4>Route Preferences</h4>
-                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+  <div class="container-fluid">
+      <div class="row">
+          <div class="col-md-8">
+              <div id="map"></div>
+          </div>
+          <div class="col-md-4">
+              <h4>Route Preferences</h4>
+              <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
 
-                        <label for="origin">Origin:</label>
-                        <select class="form-control" id="origin">
-                            <option disabled="disabled" selected="selected">
-				            Select your origin
-			                </option>
-                        </select>
+                  <label for="origin">Origin:</label>
+                  <select class="form-control" id="origin">
+                      <option disabled="disabled" selected="selected">
+              Select your origin
+                </option>
+                  </select>
 
-                        <label for="dest">Destination:</label>
-                        <select class="form-control" id="dest">
-                            <option disabled="disabled" selected="selected">
-				            Select your destination
-			                </option>
-                        </select>
+                  <label for="dest">Destination:</label>
+                  <select class="form-control" id="dest">
+                      <option disabled="disabled" selected="selected">
+              Select your destination
+                </option>
+                  </select>
 
-                        <label for="route">Route:</label>
-                        <select class="form-control" id="route">
-                           <option disabled="disabled" selected="selected">
-				            Select a route
-			                </option>
-                        </select>
+                  <label for="route">Route:</label>
+                  <select class="form-control" id="route">
+                      <option disabled="disabled" selected="selected">
+              Select a route
+                </option>
+                  </select>
 
 
-                        <label for="date_time_selector">Date & Time:</label>
-                        <div id="date_time_select_container">
-                            <input id="date_time_selector" size="16" type="text">
-                        </div>
+                  <label for="date_time_selector">Date & Time:</label>
+                  <div id="date_time_select_container">
+                      <input id="date_time_selector" size="16" type="text">
+                  </div>
 
-                        <script>
-                            $("#date_time_selector").flatpickr({
-                                minDate: "today",
-                                enableTime: true,
-                                maxDate: new Date().fp_incr(7)
-                            }
-                            );
-                        </script>
+                  <script>
+                      $("#date_time_selector").flatpickr({
+                          minDate: "today",
+                          enableTime: true,
+                          maxDate: new Date().fp_incr(7)
+                      }
+                      );
+                  </script>
 
-                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
-                    </div>
-                </div>
-            </div>
-            <div id="results"></div>
-        </div>
+                  <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
+              </div>
+          </div>
+      </div>
+      <div id="results"></div>
+  </div>
 
 <script>
 

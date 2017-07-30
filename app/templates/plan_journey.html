@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
+<link href="{{ url_for('static', filename='css/plan_journey.css') }}" rel="stylesheet" type="text/css">
 <script src="{{url_for('static', filename='js/plan_journey.js')}}"></script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfU_M1JL1ZqH4QMhd3OALLgjBC8l2tAdw&callback=initMap"></script>
 {% endblock %}
@@ -8,11 +9,13 @@
 
 {% block content %}
 
-<!-- Get the URL of the server (including trailing /) and attach it to the window object -->
-<script> window.onload = function() {
-    window.serverUrl = {{ request.script_root|tojson|safe }}
-} </script>
-
-<div id='map'></div>
+<div class="row">
+  <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+    <div id='map'></div>
+  </div>
+   <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+    <div id='results'></div>
+  </div>
+</div>
 
 {% endblock %}

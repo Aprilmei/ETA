@@ -27,6 +27,13 @@
 </head>
 
 <body>
+        
+    <!-- Get the URL of the server (including trailing /) and attach it to the window object -->
+    <script> window.onload = function() {
+        window.serverUrl = {{ request.script_root|tojson|safe }}
+    } </script>
+
+
     <!-- Main div containing the whole page -->
     <div class="container">
         <!-- Jumbotron containg site title and tagline -->
@@ -68,8 +75,6 @@
 
     </div>
 </body>
-<footer>
-    <p>This website was developed by<br>Andrew Cameron<br>Pamela Kelly<br>Conan Martin<br>April Mei<br>2017</p>
-</footer>
+
 
 </html>

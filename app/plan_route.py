@@ -115,8 +115,6 @@ def find_routes(origin, destination, max_walk=500):
             journey_options.append(
                 journey_transits(origin_stop_id, dest_stop_id))
 
-    log.debug(journey_options)
-
     # only keep the options with fewest number of changes
     fewest_changes = float('inf')
     for opt in journey_options:
@@ -126,11 +124,9 @@ def find_routes(origin, destination, max_walk=500):
     journey_options = [opt for opt in journey_options
                        if len(opt) == fewest_changes]
 
-    log.debug(journey_options)
-
     journey_options = [list(parse_route(opt)) for opt in journey_options]
 
-    log.info(journey_options)
+    log.debug(journey_options)
     return journey_options
 
 

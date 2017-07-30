@@ -1,0 +1,32 @@
+#routes-table {
+    padding: 5px;
+    text-align: left;
+
+}
+
+table, th, tr, td {
+    padding: 10px;
+    color: black
+}
+
+thead {
+    background-color: #4BA2A2;
+    color: white
+}
+
+.even-route{
+    background-color: #ACE4E6;
+}
+
+.odd-route{
+    background-color: #F8F8F8;
+}
+
+#results {
+    background-color: #F8F8F8;
+    height: 400px;
+}
+
+#map {
+    height: 
+}
