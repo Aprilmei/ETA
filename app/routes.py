@@ -1,12 +1,13 @@
 import pickle
 
-from flask import render_template, jsonify
+from flask import render_template, jsonify, request, url_for
 from flask_cors import cross_origin
 import pandas as pd
 
-from main import app
+from main import app, log
 from db_tools import connect_to_database
 from os.path import dirname
+from plan_route import find_routes
 
 with open('data/sk_linear_model2', 'rb') as f:
 	loaded_model = pickle.load(f)
@@ -19,6 +20,27 @@ def index():
 @app.route("/rti")
 def rti():
 	return render_template("rti.html")
+
+@app.route('/plan_journey')
+def plan_journey():
+    # https://stackoverflow.com/questions/35246135/flask-request-script-roottojsonsafe-returns-nothing
+    if not request.script_root:
+        request.script_root = url_for('index', _external=True)
+
+    return render_template('plan_journey.html')
+
+
+@app.route('/get_routes', methods=["POST"])
+def get_routes():
+    log.debug(request.json)
+
+    origin = (request.json['origin']['lat'],
+              request.json['origin']['lng'])
+
+    destination = (request.json['destination']['lat'],
+                   request.json['destination']['lng'])
+
+    return jsonify(find_routes(origin, destination))
 
 
 @app.route("/stops/<int:year>")

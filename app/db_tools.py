@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 
 
 def connect_to_database():
-    with open('database.password', 'r') as fh:
+    with open('password.txt', 'r') as fh:
         password = fh.readline().strip().rstrip('\n')
     username = "eta"
     uri = "eta.cb0ofqejduea.eu-west-1.rds.amazonaws.com"
