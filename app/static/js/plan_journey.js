@@ -1,6 +1,13 @@
 window.addEventListener('load', function () {
-  document.getElementById('results')
-    .innerText = 'Drag journey Start and Finish markers to desired locations'
+
+  // this is verbose, but the text must be within it's own element to enable
+  // vertical alignment within the restults div
+  var resultsText = document.createElement('h4')
+  resultsText.innerText =
+    'Drag journey Start and Finish markers to desired locations'
+  resultsText.setAttribute('id', 'results-text')
+
+  document.getElementById('results').appendChild(resultsText)
 })
 
 
@@ -38,7 +45,8 @@ function initMap() {
   window.destinationMarker.addListener('dragend', handleDragEnd)
   window.originMarker.addListener('dragend', handleDragEnd)
 
-  /*
+  /*  Info windows get in the way, mabybe not neccessary?
+
   new google.maps.InfoWindow({
     content: "Drag to origin"
   }).open(window.map, window.originMarker)
@@ -47,7 +55,7 @@ function initMap() {
     content: "Drag to destination"
   }).open(window.map, window.destinationMarker)
 
-*/
+  */
 }
 
 function handleDragEnd(event) {
@@ -185,7 +193,6 @@ function makeTable(routes) {
 
 // triggering this just on the row mouseleave event doesn't always work
 // when the mouse leaves the row AND the entire table
-
 function clearPolyline(event) {
   window.polyline.setMap(null)
   window.polyline = null
