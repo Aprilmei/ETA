@@ -218,45 +218,38 @@ function travelTime() {
     out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
     document.getElementById("results").innerHTML = out;
 
-    showRoute(origin, dest);
+    showRoute(origin, dest, jpid);
     call_model(origin, dest, weekday, hour, jpid);
 }
 
+markersArray = [];
 
-function showRoute(origin, dest) {
-    $.getJSON("data/stops.json", function (data) {
-        var stops = data;
-        for (var i = 0; i < Object.keys(stops).length; i++) {
-            if (stops[i].stop_id.endsWith(origin)) {
-                var originStop = stops[i];
-                break; // short circuit for efficiency
-            }
-        }
-        for (var i = 0; i < Object.keys(stops).length; i++) {
-            if (stops[i].stop_id.endsWith(dest)) {
-                var destStop = stops[i];
-                break; // short circuit for efficiency
-            }
-        }
-        // display origin and destination markers on map - 2017 stops
+function showRoute(origin_id, destination_id, jpid) {
+$.getJSON("http://127.0.0.1:5000/pop_map_route/" + origin_id + "/" + destination_id + "/" + jpid, function (data) {
+    var stops = data.stops;
+    console.log(markersArray);
+
+    for(var i = 0; i < markersArray.length; i++) {
+        markersArray[i].setMap(null);
+    }
+    markersArray.length = 0;
+
+
+    _.forEach(stops, function(data){
         var marker = new google.maps.Marker({
-            position: {
-                lat: originStop["stop_lat"],
-                lng: originStop["stop_lon"]
-            },
-            map: map,
-            title: originStop["stop_name"],
-            stop_number: originStop["stop_id"]
-        });
-        var marker = new google.maps.Marker({
-            position: {
-                lat: destStop["stop_lat"],
-                lng: destStop["stop_lon"]
-            },
-            map: map,
-            title: destStop["stop_name"],
-            stop_number: destStop["stop_id"]
-        });
+        position: {
+            lat: data["latitude"],
+            lng: data["longitude"]
+        },
+        map: map,
+        title: data["stop_address"],
+        stop_number: data["stop_id"]
+    }
+    );
+        markersArray.push(marker);
+
+    });
+
     });
 }
 
