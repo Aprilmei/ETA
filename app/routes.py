@@ -9,6 +9,9 @@ from db_tools import connect_to_database
 from os.path import dirname
 from plan_route import find_routes
 
+with open('data/sk_linear_model2', 'rb') as f:
+	loaded_model = pickle.load(f)
+
 
 @app.route("/")
 def index():
@@ -50,7 +53,9 @@ def get_stops(year):
 		"SELECT stop_address, stop_id FROM bus_stops WHERE year = {} ORDER BY stop_address;".format(year))
 	for row in rows:
 		stops.append(dict(row))
+	engine.dispose()
 	return jsonify(stops=stops)
+
 
 
 
@@ -60,13 +65,35 @@ def get_destination_stops(stop_id):
 	engine = connect_to_database()
 	conn = engine.connect()
 	stops = []
-	rows = conn.execute("select * from eta.bus_stops where stop_id in (select \
-						distinct stop_id from eta.routes where journey_pattern \
-						in (select journey_pattern from eta.routes where stop_id \
-						= {}) and stop_id != {}) order by stop_address;".format(stop_id, stop_id))
+	routes = []
+	returned_stops = []
+	rows = conn.execute("SELECT journey_pattern, position_on_route FROM eta.routes \
+						WHERE stop_id = {};".format(stop_id))
 	for row in rows:
-		stops.append(dict(row))
-	return jsonify(stops=stops)
+		routes.append(dict(row))
+	print("Routes:", routes)
+	for r in routes:
+		jpid = r['journey_pattern']
+		distance = r['position_on_route']
+		route_stops = conn.execute("SELECT stop_id FROM eta.routes WHERE journey_pattern = {} \
+								   and position_on_route > {};".format("'" + jpid + "'", distance))
+		for route_stop in route_stops:
+			stops.append(route_stop[0])
+	print("Stops", stops)
+	stops = tuple(set(stops))
+	stop_rows = conn.execute("SELECT stop_address, stop_id FROM eta.bus_stops \
+							 WHERE stop_id in {};".format(stops))
+	for s in stop_rows:
+		returned_stops.append(dict(s))
+
+	# rows = conn.execute("select * from eta.bus_stops where stop_id in (select \
+	# 					distinct stop_id from eta.routes where journey_pattern \
+	# 					in (select journey_pattern from eta.routes where stop_id \
+	# 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
+	# for row in rows:
+	# 	stops.append(dict(row))
+	engine.dispose()
+	return jsonify(stops=returned_stops)
 
 
 @app.route("/possible_routes/<int:origin_id>/<int:destination_id>")
@@ -81,17 +108,13 @@ def get_possible_routes(origin_id, destination_id):
                         .format(origin_id, destination_id))
 	for row in rows:
 		routes.append(dict(row))
+	engine.dispose()
 	return jsonify(routes=routes)
 
 
 @app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/<jpid>")
 @cross_origin()
 def predict_time(origin_id, destination_id, weekday, hour, jpid):
-#     stop_dist = {"44": 3432, "45": 3809, "46": 4603, "47": 4501, "48": 4665, "49": 4986, "50": 5162, "51": 5228, "52": 8648,
-#                  "119": 3096, "213": 2314, "214": 2694, "226": 3, "227": 849, "228": 271, "229": 474, "230": 1050, "231": 1318,
-#                  "265": 6338, "271": 6903, "340": 7330, "350": 7772, "351": 8277, "352": 8525, "353": 8772, "354": 8872,
-#                  "355": 9075, "356": 9494, "357": 9907, "372": 10308, "373": 10635, "374": 10717, "375": 10949, "376": 11463,
-#                  "377": 11775, "378": 11990, "380": 12957, "390": 9964, "1641": 1701, "1642": 2079, "2804": 11190, "4432": 2901}
 
 	engine = connect_to_database()
 	conn = engine.connect()
@@ -104,38 +127,29 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 	for o in origin_distance_list:
 		o_distance.update(dict(o))
 
-
-
 	for d in destination_distance_list:
 		d_distance.update(dict(d))
+
+	print("o_distance:", o_distance)
+	print("d_distance:", d_distance)
 
 	origin_distance = o_distance['position_on_route']
 	destination_distance = d_distance['position_on_route']
 
-	print("O distance", origin_distance)
-	print("D distance", destination_distance)
-	# for row in rows:
-	# 	coordinates.append(dict(row))
-
-	# datadir = dirname(__file__) + '/data/'
-	#
-	# with open(datadir + 'sk_linear_model2') as f:
-	# 	loaded_model = pickle.load(f)
-
-	with open('data/sk_linear_model2', 'rb') as f:
-		loaded_model = pickle.load(f)
+	# print("O distance", origin_distance)
+	# print("D distance", destination_distance)
 
 	def get_time(distance, weekday, hour):
-		params = [{
-            'Distance_Terminal': distance,
-			'midweek': weekday,
-			'HourOfDay': hour,
-        }]
+		# params = [{
+        #   'Distance_Terminal': distance,
+		# 	'midweek': weekday,
+		# 	'HourOfDay': hour,
+		# }]
+		#
+		# df = pd.DataFrame(params)
 
-		df = pd.DataFrame(params)
-
-		estimated_time = loaded_model.predict(df)
-		print(estimated_time)
+		estimated_time = loaded_model.predict([distance, weekday, hour])
+		# print(estimated_time)
 		return estimated_time[0]
 
 	origin_time = get_time(origin_distance, weekday, hour)
@@ -147,5 +161,5 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 	time_dif = dest_time - origin_time
 	time.append(time_dif)
 	# print("Time between stops is: ", time)
-
+	engine.dispose()
 	return jsonify(time=time)
