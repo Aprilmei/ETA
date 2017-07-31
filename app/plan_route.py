@@ -1,7 +1,7 @@
 from geopy.distance import distance
 import networkx as nx
 
-from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES
+from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES, STOP_COORDS
 from main import log
 
 
@@ -26,7 +26,6 @@ def k_nearest_stop_coords(lat, lon, k=1, TREE=ALL_STOPS_TREE):
         coords = (float(coords[0]), float(coords[1]))
         results.append(coords)
 
-    log.debug(results)
     return results
 
 
@@ -65,7 +64,7 @@ def lines_connecting_stops(origin_stop_id, destination_stop_id, GRAPH=GRAPH):
     lines that go directly from origin to destination. Assumes no bus changes
     required (use necessary_stop_changes() first if needed)
 
-    @ params : origin_stop_id - str 
+    @ params : origin_stop_id - str
                destination_stop_id - str
                GRAPH - nextworkx.multigraph (OPTIONAL. Defaults to GRAPH)
 
@@ -82,15 +81,28 @@ def lines_connecting_stops(origin_stop_id, destination_stop_id, GRAPH=GRAPH):
 
 
 def find_routes(origin, destination, max_walk=500):
-    """Takes two (lat, lon) coordinates, and finds the 
+    """Takes two (lat, lon) coordinates, and finds the
     easiest route between them.
 
-    returns : a list of list of dictionaries. 
+    returns : a list of list of dictionaries.
     eg:
         [
-            [{'busses': ['83_O'], 'board': '315', 'deboard': '1016'}, ...], 
-            [{'busses': ['65_I', '65b_I'], 'board': '1358', 'deboard': '1072'},...]
+            [{
+            'busses': ['65_I', '65b_I'],
+            'board': {
+                'id': '1358',
+                'lat': 234234.345345,
+                'lng': 23412.1231
+            }
+            'deboard': {
+                'id': '1358',
+                'lat': 234234.345345,
+                'lng': 23412.1231
+            }
+            ...]
         ]
+
+    TODO: This is damn ugly, needs refactoring
     """
 
     origin_stops = k_nearest_stop_coords(*origin, k=10)
@@ -105,15 +117,13 @@ def find_routes(origin, destination, max_walk=500):
 
     journey_options = []
     for origin in origin_stops:
-        origin_stop_id = stop_id_for_coords(origin)
-
         for destination in destination_stops:
-            dest_stop_id = stop_id_for_coords(destination)
 
             # This will give us the stops in a journey required for fewest
             # number of changes
             journey_options.append(
-                journey_transits(origin_stop_id, dest_stop_id))
+                journey_transits(stop_id_for_coords(origin),
+                                 stop_id_for_coords(destination)))
 
     # only keep the options with fewest number of changes
     fewest_changes = float('inf')
@@ -124,6 +134,7 @@ def find_routes(origin, destination, max_walk=500):
     journey_options = [opt for opt in journey_options
                        if len(opt) == fewest_changes]
 
+    log.debug(journey_options[0])
     journey_options = [list(parse_route(opt)) for opt in journey_options]
 
     log.debug(journey_options)
@@ -139,10 +150,11 @@ def parse_route(changes, GRAPH=GRAPH):
     TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
     THE NODES? CAN WE GET ALL EDGES?
     """
+    global STOP_COORDS
 
     changes = iter(changes)
     prev_stop = next(changes)
-
+    log.debug(prev_stop)
     for next_stop in changes:
 
         # Sometimes there's more than only line (edge) for any given 2 nodes
@@ -150,11 +162,18 @@ def parse_route(changes, GRAPH=GRAPH):
         edges = GRAPH[prev_stop][next_stop]
         for edge in edges.values():
             lines.append(edge['line'])
-
         yield {
             'busses': lines,
-            'board': prev_stop,
-            'deboard': next_stop
+            'board': {
+                'id': prev_stop,
+                'lat': STOP_COORDS[prev_stop][0],
+                'lng': STOP_COORDS[prev_stop][1]
+            },
+            'deboard': {
+                'id': next_stop,
+                'lat': STOP_COORDS[next_stop][0],
+                'lng': STOP_COORDS[next_stop][1]
+            }
         }
 
         prev_stop = next_stop

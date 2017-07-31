@@ -21,7 +21,7 @@ function initMap() {
       lng: -6.263098
     },
     map: window.map,
-    label: "O",
+    label: "S",
     draggable: true
   })
 
@@ -31,13 +31,14 @@ function initMap() {
       lng: -6.257776
     },
     map: window.map,
-    label: "D",
+    label: "F",
     draggable: true
   })
 
   window.destinationMarker.addListener('dragend', handleDragEnd)
   window.originMarker.addListener('dragend', handleDragEnd)
 
+  /*
   new google.maps.InfoWindow({
     content: "Drag to origin"
   }).open(window.map, window.originMarker)
@@ -45,6 +46,8 @@ function initMap() {
   new google.maps.InfoWindow({
     content: "Drag to destination"
   }).open(window.map, window.destinationMarker)
+
+*/
 }
 
 function handleDragEnd(event) {
@@ -98,31 +101,8 @@ function displayRoutes(routes) {
   results.appendChild(makeTable(routes))
 }
 
-function IGNORE_NEEDS_ADAPTING() {
-  window.polylines = routes.map(function (x) {
-    return new google.maps.Polyline({
-      path: [
-        new google.maps.LatLng(
-          x.board.coords[0],
-          x.board.coords[1]
-        ),
-        new google.maps.LatLng(
-          x.deboard.coords[0],
-          x.deboard.coords[1]
-        )
-      ],
-
-      strokeColor: "#FF0000",
-      strokeOpacity: 1.0,
-      strokeWeight: 1,
-      map: window.map
-    })
-  })
-}
-
 
 function makeTable(routes) {
-
 
   // create table and append to body
   var table = document.createElement('table')
@@ -130,10 +110,10 @@ function makeTable(routes) {
 
   // set the table header row
   var hRow = table.createTHead().insertRow()
-  hRow.insertCell().innerText = 'Board at'
-  hRow.insertCell().innerText = 'Deboard at'
-  hRow.insertCell().innerText = 'Bus line options'
-
+  hRow.insertCell().innerText = 'board at'
+  hRow.insertCell().innerText = 'deboard at'
+  hRow.insertCell().innerText = 'bus options'
+  hRow.setAttribute('class', 'table-header-row')
 
   // in order to have each route in the table alternate
   // colour to distinguish between them, evenRoute is used
@@ -143,27 +123,71 @@ function makeTable(routes) {
   routes.forEach(function (route) {
 
     evenRoute
-      ? rowClass = 'even-route'
-      : rowClass = 'odd-route'
+      ? className = 'even-route'
+      : className = 'odd-route'
     evenRoute = !evenRoute
-
 
     route.forEach(function (routeSection) {
       var row = table.insertRow()
-      row.setAttribute('class', rowClass)
+      row.setAttribute('class', className)
 
-      row.insertCell().innerText = routeSection.board
-      row.insertCell().innerText = routeSection.deboard
+      row.insertCell().innerText = routeSection.board.id
+      row.insertCell().innerText = routeSection.deboard.id
 
       // concatinate all strings in routeSection.busses array
       row.insertCell().innerText =
         routeSection.busses.reduce(function (str, bus) {
-          return str + bus + '\t'
+          return str + bus + '    '
         }, '')
+
+      // set the journey as an attribute of the row for easy lookup
+      // for display on the map
+      row._data = {
+        board: routeSection.board,
+        deboard: routeSection.deboard
+      }
+
+      // Display the journey segment on the map when the user hoves over
+      // the appropriate row in the table
+      row.addEventListener('mouseover', function (event) {
+        // clear existing polyline
+        try {
+          window.polyline.setMap(null)
+        } catch (e) { }
+        window.polyline = null
+
+        var x = event.currentTarget
+        console.log(x)
+
+        window.polyline = new google.maps.Polyline({
+          path: [
+            new google.maps.LatLng(
+              x._data.board.lat,
+              x._data.board.lng
+            ),
+            new google.maps.LatLng(
+              x._data.deboard.lat,
+              x._data.deboard.lng
+            )
+          ],
+
+          strokeColor: "#FF0000",
+          strokeOpacity: 1.0,
+          strokeWeight: 1,
+          map: window.map
+        })
+      })
+      row.addEventListener('mouseleave', clearPolyline)
     })
   })
   return table
 }
 
+// triggering this just on the row mouseleave event doesn't always work
+// when the mouse leaves the row AND the entire table
 
+function clearPolyline(event) {
+  window.polyline.setMap(null)
+  window.polyline = null
+}
 
