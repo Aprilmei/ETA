@@ -1,153 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <title>ETA Predicting Travel Time for Dublin Bus Passengers</title>
-    <!-- References: W3Schools Bootstrap Tutorial -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-    <script src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/0.10.0/lodash.min.js" type="text/javascript"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
-    <script src="https://unpkg.com/flatpickr" type="text/javascript"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOHmIoluu_RROTARx0AHofNWZbLHg8yxU&callback=initMap" async
-        defer></script>
-
-    <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet" type="text/css">
-    <script src="{{ url_for('static', filename='js/index.js') }}" type="text/javascript"></script>
-
-</head>
+{% block head %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOHmIoluu_RROTARx0AHofNWZbLHg8yxU&callback=initMap" async defer></script>
+<link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet" type="text/css">
+<script src="{{ url_for('static', filename='js/index.js') }}" type="text/javascript"></script>
+{% endblock %}
 
 
+{% block content %}
 
-<body onload="handleBodyLoad">
-    <!-- Setting the URL to be used. See:
-    http://flask.pocoo.org/docs/0.12/patterns/jquery/#where-is-my-sitehttp://flask.pocoo.org/docs/0.12/patterns/jquery/#where-is-my-site-->
-    <script>
-        function handleBodyLoad() {
-            console.log('hello')
-            $SCRIPT_ROOT = {{ request.script_root | tojson | safe }}
-        console.log($SCRIPT_ROOT)
-        }
-    </script>
+  <div class="container-fluid">
+      <div class="row">
+          <div class="col-md-8">
+              <div id="map"></div>
+          </div>
+          <div class="col-md-4">
+              <h4>Route Preferences</h4>
+              <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
 
-    <!-- Main div containing the whole page -->
-    <div class="container">
-        <!-- Jumbotron containg site title and tagline -->
-        <div class="jumbotron">
-            <h1 class="page-header">ETA<br>
-                <p>Delivering Accurate Travel Times to Dublin Bus Users</p>
-            </h1>
-        </div>
-        <div>
-            <!-- Navigation Bar - Collapsible for Mobile Optimisation -->
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </button>
-                        <a class="navbar-brand" href="#">ETA</a>
-                    </div>
-                    <div class="collapse navbar-collapse" id="myNavbar">
-                        <ul class="nav navbar-nav">
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#">Route Planner</a>
-                                <li><a href="#">Timetables</a></li>
-                                <li><a href="#">Contact</a></li>
-                        </ul>
-                        <ul class="nav navbar-nav navbar-right">
-                            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Login</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </div>
-        <!-- Very basic first prototype
+                  <label for="origin">Origin:</label>
+                  <select class="form-control" id="origin">
+                      <option disabled="disabled" selected="selected">
+              Select your origin
+                </option>
+                  </select>
 
-            Only uses the number 7 from terminus to terminus on a Monday
+                  <label for="dest">Destination:</label>
+                  <select class="form-control" id="dest">
+                      <option disabled="disabled" selected="selected">
+              Select your destination
+                </option>
+                  </select>
 
-            Estimate times taken from Dublin Bus Website for now - via a dummy csv
-            
-            -->
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8">
-                    <div id="map"></div>
-                </div>
-                <div class="col-md-4">
-                    <h4>Route Preferences</h4>
-                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+                  <label for="route">Route:</label>
+                  <select class="form-control" id="route">
+                      <option disabled="disabled" selected="selected">
+              Select a route
+                </option>
+                  </select>
 
-                        <label for="origin">Origin:</label>
-                        <select class="form-control" id="origin">
-                            <option disabled="disabled" selected="selected">
-				            Select your origin
-			                </option>
-                        </select>
 
-                        <label for="dest">Destination:</label>
-                        <select class="form-control" id="dest">
-                            <option disabled="disabled" selected="selected">
-				            Select your destination
-			                </option>
-                        </select>
+                  <label for="date_time_selector">Date & Time:</label>
+                  <div id="date_time_select_container">
+                      <input id="date_time_selector" size="16" type="text">
+                  </div>
 
-                        <label for="route">Route:</label>
-                        <select class="form-control" id="route">
-                           <option disabled="disabled" selected="selected">
-				            Select a route
-			                </option>
-                        </select>
+                  <script>
+                      $("#date_time_selector").flatpickr({
+                          minDate: "today",
+                          enableTime: true,
+                          maxDate: new Date().fp_incr(7)
+                      }
+                      );
+                  </script>
 
-                        <!--<label for="day">Day:</label>-->
-                        <!--<select class="form-control" id="day">-->
-                        <!--<option disabled="disabled" selected="selected">-->
-                        <!--Select a day-->
-                        <!--</option>-->
-                        <!--<option value="2">Monday</option>-->
-                        <!--<option value="3">Tuesday</option>-->
-                        <!--<option value="4">Wednesday</option>-->
-                        <!--<option value="5">Thursday</option>-->
-                        <!--<option value="6">Friday</option>-->
-                        <!--<option value="7">Saturday</option>-->
-                        <!--<option value="1">Sunday</option>-->
-                        <!--</select>-->
-
-                        <label for="date_time_selector">Date & Time:</label>
-                        <div id="date_time_select_container">
-                            <input id="date_time_selector" size="16" type="text">
-                        </div>
-
-                        <script>
-                            $("#date_time_selector").flatpickr({
-                                minDate: "today",
-                                enableTime: true,
-                                maxDate: new Date().fp_incr(7)
-                            }
-                            );
-                        </script>
-
-                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
-                    </div>
-                </div>
-            </div>
-            <div id="results"></div>
-        </div>
-    </div>
-</body>
-<footer>
-    <p>This website was developed by<br>Andrew Cameron<br>Pamela Kelly<br>Conan Martin<br>April Mei<br>2017</p>
-</footer>
+                  <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
+              </div>
+          </div>
+      </div>
+      <div id="results"></div>
+  </div>
 
 <script>
                             function pop_origin_stops() {
@@ -166,6 +78,7 @@
                                 })
                             }
 
+<<<<<<< HEAD
                             function pop_destination_stops(origin_id) {
                                 var destination_drop = $('#dest');
                                 $.getJSON("http://csi6220-4-vm1.ucd.ie/destination_stops/" + origin_id, function (data) {
@@ -338,3 +251,205 @@
 </script>
 
 </html>
+=======
+function pop_origin_stops() {
+    var origin_drop = $('#origin');
+    $.getJSON("http://127.0.0.1:5000/stops/2012", function (data) {
+        if ('stops' in data) {
+            var stops = data.stops;
+            console.log('stops', stops);
+            _.forEach(stops, function (data) {
+                origin_drop.append($('<option>', {
+                    value: data.stop_id,
+                    text: data.stop_address + " - Stop No: " + data.stop_id
+                }, '</option>'));
+            })
+        }
+    })
+}
+
+function pop_destination_stops(origin_id) {
+    var destination_drop = $('#dest');
+    $.getJSON("http://127.0.0.1:5000/destination_stops/" + origin_id, function (data) {
+        if ('stops' in data) {
+            var stops = data.stops;
+            console.log('stops', stops);
+            _.forEach(stops, function (data) {
+                destination_drop.append($('<option>', {
+                    value: data.stop_id,
+                    text: data.stop_address + " - Stop No: " + data.stop_id
+                }, '</option>'));
+            })
+        }
+    })
+}
+
+function pop_routes(origin_id, destination_id) {
+    var routes_drop = $('#route');
+    $.getJSON("http://127.0.0.1:5000/possible_routes/" + origin_id + "/" + destination_id, function (data) {
+        if ('routes' in data) {
+            var routes = data.routes;
+            console.log('routes', routes);
+            _.forEach(routes, function (data) {
+                routes_drop.append($('<option>', {
+                    value: data.journey_pattern,
+                    text: data.journey_pattern
+                }, '</option>'));
+            })
+        }
+    })
+}
+
+function call_model(origin_id, destination_id, weekday, hour, jpid) {
+    var time_p = $('#predicted_time_p');
+    $.getJSON("http://127.0.0.1:5000/predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid, function (data) {
+        if ('time' in data) {
+            var time = data.time;
+            console.log('time', time[0]);
+            time_p.append(
+                Math.ceil(time[0] / 60) + " minutes"
+            )
+        }
+    });
+}
+
+
+function remove_options(id, which) {
+    var list = document.getElementById(id);
+    for (var i = list.length - 1; i >= 0; i--) {
+        list.remove(i);
+    }
+    var option = document.createElement("option");
+    if (id === 'dest') {
+        option.text = 'Select a destination';
+    }
+    else {
+        option.text = "Select a " + id;
+    }
+    option.disabled = false;
+    list.add(option);
+    if (which === 'origin') {
+        pop_destination_stops($("#origin").val());
+    }
+    else if (which === 'dest') {
+        pop_routes($("#origin").val(), $("#dest").val());
+    }
+}
+
+$("#origin").change(function () {
+    remove_options('dest', 'origin');
+    remove_options('route', 'ignore');
+});
+
+$("#dest").change(function () {
+    remove_options('route', 'dest');
+});
+
+function get_weather() {
+    var xmlhttp = new XMLHttpRequest();
+    var url = "http://api.openweathermap.org/data/2.5/forecast?id=7778677&APPID=4cd167bc85dff937818ea9a5eb6fa550&units=metric";
+
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var weather_json = JSON.parse(xmlhttp.responseText);
+            apply_weather(weather_json);
+        }
+    };
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+}
+
+function apply_weather(data) {
+    weather_list = data.list;
+    console.log('list', weather_list);
+}
+
+
+
+//    function predictTime(route, origin, dest, day, time) {
+//    predictedTravelTime = "Predictions Coming Soon!";
+//}
+
+function travelTime() {
+    //    var results = document.getElementById("preferences");
+    var route = document.getElementById("route").value;
+    var origin = document.getElementById("origin").value;
+    var dest = document.getElementById("dest").value;
+    var date_time = document.getElementById('date_time_selector').value;
+    var date_split = date_time.match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
+    var timestamp = (new Date(date_split[1], date_split[2], date_split[3], date_split[4], date_split[5], '00').getTime() / 1000) - 2664000;
+    var hour = parseInt(date_split[4]);
+    console.log(hour);
+    var date = new Date(timestamp*1000);
+    var day = date.getDay();
+    var weekday;
+    if (day === 0 || day === 1 || day === 6){
+        weekday = 1;
+    }
+    else{
+        weekday = 0;
+    }
+    var jpid = document.getElementById("route").value;
+    console.log(day);
+    console.log(jpid);
+    //var day = date_time.slice(0, 10);
+    //var time = date_time.slice(11);
+    var weather_at_time = weather_list[0];
+    for (var x = 1; x < weather_list.length; x++) {
+        if (Math.abs(parseInt(weather_list[x]['dt']) - parseInt(timestamp)) < Math.abs(parseInt(weather_at_time['dt']) - parseInt(timestamp))) {
+            weather_at_time = weather_list[x];
+        }
+    }
+    //    console.log("Weather at time:", weather_at_time);
+    //    console.log(route, origin, dest, day, time);
+
+    var i, out = "";
+    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
+    document.getElementById("results").innerHTML = out;
+
+    showRoute(origin, dest);
+    call_model(origin, dest, weekday, hour, jpid);
+}
+
+
+function showRoute(origin, dest) {
+    $.getJSON("data/stops.json", function (data) {
+        var stops = data;
+        for (var i = 0; i < Object.keys(stops).length; i++) {
+            if (stops[i].stop_id.endsWith(origin)) {
+                var originStop = stops[i];
+                break; // short circuit for efficiency
+            }
+        }
+        for (var i = 0; i < Object.keys(stops).length; i++) {
+            if (stops[i].stop_id.endsWith(dest)) {
+                var destStop = stops[i];
+                break; // short circuit for efficiency
+            }
+        }
+        // display origin and destination markers on map - 2017 stops
+        var marker = new google.maps.Marker({
+            position: {
+                lat: originStop["stop_lat"],
+                lng: originStop["stop_lon"]
+            },
+            map: map,
+            title: originStop["stop_name"],
+            stop_number: originStop["stop_id"]
+        });
+        var marker = new google.maps.Marker({
+            position: {
+                lat: destStop["stop_lat"],
+                lng: destStop["stop_lon"]
+            },
+            map: map,
+            title: destStop["stop_name"],
+            stop_number: destStop["stop_id"]
+        });
+    });
+}
+
+</script>
+
+{% endblock %}
+>>>>>>> route_finder

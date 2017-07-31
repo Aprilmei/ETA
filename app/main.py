@@ -2,6 +2,14 @@ import argparse
 from flask import Flask
 import config
 
+import logging
+LOG_FORMAT = '%(levelname)s: %(module)s.%(funcName)s -> %(message)s'
+
+logging.basicConfig(
+    format=LOG_FORMAT
+)
+log = logging.getLogger()
+
 
 def get_args():
     """User passes either 'dev' or 'production' at runtime to specify what config
@@ -15,13 +23,6 @@ def get_args():
     return parser.parse_args()
 
 
-def server_url():
-    """js functions require the server URL for HTTP requests. Use this function
-    to get the URL rather than hardcoding it, so it'll still work in production."""
-    global conf
-    return conf.server_url
-
-
 app = Flask(__name__)
 # Must import routes after app is defined because routes.py
 # imports app from here
@@ -33,6 +34,7 @@ if __name__ == '__main__':
 
     if args.environment == 'dev':
         conf = config.DevelopmentConfig
+        log.setLevel(logging.DEBUG)
     elif args.environment == 'production':
         conf = config.ProductionConfig
     else:
@@ -42,4 +44,3 @@ if __name__ == '__main__':
     app.run(host=conf.listen_host,
             port=conf.listen_port,
             debug=conf.debug)
-
