@@ -2,7 +2,6 @@ import pickle
 
 from flask import render_template, jsonify, request, url_for
 from flask_cors import cross_origin
-import pandas as pd
 
 from main import app, log
 from db_tools import connect_to_database
@@ -10,16 +9,18 @@ from os.path import dirname
 from plan_route import find_routes
 
 with open('data/sk_linear_model2', 'rb') as f:
-	loaded_model = pickle.load(f)
+    loaded_model = pickle.load(f)
 
 
 @app.route("/")
 def index():
-	return render_template("index.html")
+    return render_template("index.html")
+
 
 @app.route("/rti")
 def rti():
-	return render_template("rti.html")
+    return render_template("rti.html")
+
 
 @app.route('/plan_journey')
 def plan_journey():
@@ -62,7 +63,6 @@ def get_stops(year):
 
 
 
-
 @app.route("/destination_stops/<int:stop_id>")
 @cross_origin()
 def get_destination_stops(stop_id):
@@ -72,7 +72,7 @@ def get_destination_stops(stop_id):
 	routes = []
 	returned_stops = []
 	rows = conn.execute("SELECT journey_pattern, position_on_route FROM eta.routes \
-						WHERE stop_id = {};".format(stop_id))
+  						WHERE stop_id = {};".format(stop_id))
 	for row in rows:
 		routes.append(dict(row))
 	# print("Routes:", routes)
@@ -80,7 +80,7 @@ def get_destination_stops(stop_id):
 		jpid = r['journey_pattern']
 		distance = r['position_on_route']
 		route_stops = conn.execute("SELECT stop_id FROM eta.routes WHERE journey_pattern = {} \
-								   and position_on_route > {};".format("'" + jpid + "'", distance))
+  								   and position_on_route > {};".format("'" + jpid + "'", distance))
 		for route_stop in route_stops:
 			print(route_stop[0])
 			stops.append(route_stop[0])
@@ -96,10 +96,10 @@ def get_destination_stops(stop_id):
 
 	# rows = conn.execute("select * from eta.bus_stops where stop_id in (select \
 	# 					distinct stop_id from eta.routes where journey_pattern \
-	# 					in (select journey_pattern from eta.routes where stop_id \
-	# 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
-	# for row in rows:
-	# 	stops.append(dict(row))
+    # 					in (select journey_pattern from eta.routes where stop_id \
+    # 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
+    # for row in rows:
+    # 	stops.append(dict(row))
 	engine.dispose()
 	return jsonify(stops=returned_stops)
 
@@ -174,7 +174,7 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 
 	def get_time(distance, weekday, hour):
 		# params = [{
-        #   'Distance_Terminal': distance,
+		#   'Distance_Terminal': distance,
 		# 	'midweek': weekday,
 		# 	'HourOfDay': hour,
 		# }]
