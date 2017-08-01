@@ -215,7 +215,7 @@ function travelTime() {
     //    console.log(route, origin, dest, day, time);
 
     var i, out = "";
-    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div><div class='col-md-4'><h4>Advanced Preferences</h4><div class='radio'><label><input type='radio' name='optradio'>Fastest Route</label></div><div class='radio'><label><input type='radio' name='optradio'>Fewest Changeovers</label></div><div class='radio'><label><input type='radio' name='optradio'>Cheapest Route</label></div></div></div></div>";
+    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div></div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest, jpid);
