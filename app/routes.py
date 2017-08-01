@@ -9,39 +9,39 @@ from os.path import dirname
 from plan_route import find_routes
 
 with open('data/sk_linear_model2', 'rb') as f:
-    loaded_model = pickle.load(f)
+	loaded_model = pickle.load(f)
 
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+	return render_template("index.html")
 
 
 @app.route("/rti")
 def rti():
-    return render_template("rti.html")
+	return render_template("rti.html")
 
 
 @app.route('/plan_journey')
 def plan_journey():
-    # https://stackoverflow.com/questions/35246135/flask-request-script-roottojsonsafe-returns-nothing
-    if not request.script_root:
-        request.script_root = url_for('index', _external=True)
+	# https://stackoverflow.com/questions/35246135/flask-request-script-roottojsonsafe-returns-nothing
+	if not request.script_root:
+		request.script_root = url_for('index', _external=True)
 
-    return render_template('plan_journey.html')
+	return render_template('plan_journey.html')
 
 
 @app.route('/get_routes', methods=["POST"])
 def get_routes():
-    log.debug(request.json)
+	log.debug(request.json)
 
-    origin = (request.json['origin']['lat'],
-              request.json['origin']['lng'])
+	origin = (request.json['origin']['lat'],
+			  request.json['origin']['lng'])
 
-    destination = (request.json['destination']['lat'],
-                   request.json['destination']['lng'])
+	destination = (request.json['destination']['lat'],
+				   request.json['destination']['lng'])
 
-    return jsonify(find_routes(origin, destination))
+	return jsonify(find_routes(origin, destination))
 
 
 @app.route("/stops/<int:year>")
@@ -96,10 +96,10 @@ def get_destination_stops(stop_id):
 
 	# rows = conn.execute("select * from eta.bus_stops where stop_id in (select \
 	# 					distinct stop_id from eta.routes where journey_pattern \
-    # 					in (select journey_pattern from eta.routes where stop_id \
-    # 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
-    # for row in rows:
-    # 	stops.append(dict(row))
+	# 					in (select journey_pattern from eta.routes where stop_id \
+	# 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
+	# for row in rows:
+	# 	stops.append(dict(row))
 	engine.dispose()
 	return jsonify(stops=returned_stops)
 
@@ -112,8 +112,8 @@ def get_possible_routes(origin_id, destination_id):
 	routes = []
 	returned_routes = []
 	rows = conn.execute("SELECT journey_pattern, line_id FROM eta.routes Where stop_id \
-                        = {} and journey_pattern in ( SELECT journey_pattern \
-                        FROM eta.routes Where stop_id = {});".format(origin_id, destination_id))
+						= {} and journey_pattern in ( SELECT journey_pattern \
+						FROM eta.routes Where stop_id = {});".format(origin_id, destination_id))
 	for row in rows:
 		routes.append(dict(row))
 	for r in routes:
