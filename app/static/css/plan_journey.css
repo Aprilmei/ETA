@@ -1,0 +1,50 @@
+#routes-table {
+    padding: 5px;
+    text-align: left;
+
+}
+
+.table-header-row * {
+    background-color: #4BA2A2;
+    color: white;
+    font-weight: 700;
+}
+
+tr td {
+    padding: 10px;
+    color: black;
+    min-width: 30%;
+    
+}
+
+tr:hover {
+    cursor: pointer;
+    background-color: #4BA2A2;
+}
+
+.even-route{
+    background-color: #ACE4E6;
+}
+.odd-route{
+    background-color: #F8F8F8;
+}
+
+#results {
+    background-color: #F8F8F8;
+    height: 400px;
+    overflow-y: auto;
+}
+
+#results-text {
+    /* a hacky solution, but it works*/
+    margin: 200px;
+    text-align: center;
+}
+
+table {
+    width: 90%;
+}
+
+#map {
+    height: 400px;
+}
