@@ -24,11 +24,11 @@
         $.getJSON("https://data.dublinked.ie/cgi-bin/rtpi/realtimebusinformation?stopid=" + stop_id + "&format=json", function (data) {
             console.log(data);
             var results = data.results;
-            var out = data.errormessage + "<br><table style='width:50%'><th>Route</th><th>Destination</th><th>Time</th>";
+            var out = data.errormessage + "<br><table style='width:50%'><th>Route</th><th>Destination</th><th>Arriving</th>";
             for(var i = 0; i < results.length; i++){
                 out += "<tr><td>" + results[i]["route"] + "</td>";
                 out += "<td>" + results[i]["destination"] + "</td>";
-                out += "<td>" + results[i]["duetime"] + "</td></tr>";
+                out += "<td>" + results[i]["duetime"] + " mins</td></tr>";
             }
             out += "</table>";
             document.getElementById("results").innerHTML = out;
