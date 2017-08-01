@@ -29,9 +29,10 @@
 <body>
         
     <!-- Get the URL of the server (including trailing /) and attach it to the window object -->
-    <script> window.onload = function() {
+    <!-- This currently stops the other window.onload function in index.js from running ?-->
+    <!--<script> window.onload = function() {
         window.serverUrl = {{ request.script_root|tojson|safe }}
-    } </script>
+    } </script>-->
 
 
     <!-- Main div containing the whole page -->
