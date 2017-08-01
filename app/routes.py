@@ -150,11 +150,11 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
     o_distance = {}
     d_distance = {}
 
-        origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
-										journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
+    origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
+                    journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
 
-        destination_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
-										journey_pattern = {};".format(destination_id, "'" + jpid + "'"))
+    destination_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
+                    journey_pattern = {};".format(destination_id, "'" + jpid + "'"))
 
     for o in origin_distance_list:
         o_distance.update(dict(o))
@@ -171,30 +171,30 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
     # print("O distance", origin_distance)
     # print("D distance", destination_distance)
 
-        def get_time(distance, weekday, hour):
-            # params = [{
-            #   'Distance_Terminal': distance,
-            # 	'midweek': weekday,
-            # 	'HourOfDay': hour,
-            # }]
-            #
-            # df = pd.DataFrame(params)
+    def get_time(distance, weekday, hour):
+        # params = [{
+        #   'Distance_Terminal': distance,
+        # 	'midweek': weekday,
+        # 	'HourOfDay': hour,
+        # }]
+        #
+        # df = pd.DataFrame(params)
 
-            estimated_time = loaded_model.predict([distance, weekday, hour])
-            # print(estimated_time)
-            return estimated_time[0]
+        estimated_time = loaded_model.predict([distance, weekday, hour])
+        # print(estimated_time)
+        return estimated_time[0]
 
-        origin_time = get_time(origin_distance, weekday, hour)
-        dest_time = get_time(destination_distance, weekday, hour)
+    origin_time = get_time(origin_distance, weekday, hour)
+    dest_time = get_time(destination_distance, weekday, hour)
 
-        # print("Time to start:", origin_time)
-        # print("Time to destination:", dest_time)
-        time = []
-        time_dif = dest_time - origin_time
-        time.append(time_dif)
-        # print("Time between stops is: ", time)
-        engine.dispose()
-        return jsonify(time=time)
+    # print("Time to start:", origin_time)
+    # print("Time to destination:", dest_time)
+    time = []
+    time_dif = dest_time - origin_time
+    time.append(time_dif)
+    # print("Time between stops is: ", time)
+    engine.dispose()
+    return jsonify(time=time)
 
 
 @app.route("/pop_map_route/<int:origin_id>/<int:destination_id>/<jpid>")
