@@ -1,17 +1,56 @@
 #map {
-    height: 400px;
+    height: 600px;
 }
-            
-.jumbotron {
-    background-color: cadetblue;
+
+#home-sections {
+    width: 100%;
+    height: 150px;
     color: white;
-    font-family: georgia;
-    padding: 5px;
+    font-size: 24px;
+    text-decoration-style: solid;
+    text-align: center;
 }
-            
-footer {
-    padding: 10px;
-    margin-top: 10px;
-    background-color: cadetblue;
+
+p a {
     color: white;
+}
+
+p a: hover {
+    color: white;
+}
+
+#home-sections p a:hover {
+    color: #F7C331 !important;
+}
+
+#real-time-section p a {
+    color: #565656;
+}
+
+#route-planner-section {
+    height: 300px;
+    background-color: #A5A5AF;
+}
+
+#real-time-section {
+    height: 300px;
+    color: #565656;
+    background-color: #F5F5F5;
+    
+}
+
+#timetables-section {
+    height: 300px;
+    background-color: #A5A5AF;
+}
+
+#prefs {
+    padding: 12px;
+    border: 1px solid #A5A5AF;
+}
+
+#results {
+    border-left: 1px solid #A5A5Af;
+    border-right: 1px solid #A5A5Af;
+    border-bottom: 1px solid #A5A5Af;
 }

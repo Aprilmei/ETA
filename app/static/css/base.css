@@ -1,0 +1,65 @@
+/* Styles that should apply to the whole site */
+
+body {
+    width: 100%;
+    text-decoration-color: grey;
+    font-family: "courier new" !important;
+    height: 100%;
+    background-color: #F5F5F5; /*eggshell*/
+}
+
+.navbar {
+    padding: 0px;
+    background-color: #A5A5AF; 
+}
+
+.navbar li:hover {
+    background-color: white !important;
+}
+
+#myNavbar a:hover {
+    color: #F7C331 !important;
+}
+
+#myNavbar a {
+    color: white !important;
+}
+
+.container {
+    margin-top: 75px !important;
+    width: 100% !important;
+}
+
+.container-fluid {
+    width: 100%;
+    margin-top: 20px !important;
+}
+
+.btn {
+    position: relative;
+    float: left;
+    margin-top: 5px !important;
+    background-color: #A5A5AF;
+}
+
+.btn:hover {
+    background-color: white;
+    color: #F7C331;
+}
+
+.form-control {
+    width: 90%;
+}
+
+label {
+    margin: 5px !important;
+    width: 100% !important;
+}
+
+footer {
+    padding: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    color: white;
+}
+
