@@ -58,6 +58,7 @@ def get_stops(year):
 
 	for row in rows:
 		stops.append(dict(row))
+	conn.close()
 	engine.dispose()
 	return jsonify(stops=stops)
 
@@ -100,6 +101,7 @@ def get_destination_stops(stop_id):
 	# 					= {}) and stop_id != {} and year = 2012) order by stop_address;".format(stop_id, stop_id))
 	# for row in rows:
 	# 	stops.append(dict(row))
+	conn.close()
 	engine.dispose()
 	return jsonify(stops=returned_stops)
 
@@ -137,6 +139,7 @@ def get_possible_routes(origin_id, destination_id):
 		if o_distance['position_on_route'] < d_distance['position_on_route']:
 			# print("Adding r", r)
 			returned_routes.append(dict(r))
+	conn.close()
 	engine.dispose()
 	# print("Returned Routes:", returned_routes)
 	return jsonify(routes=returned_routes)
@@ -194,6 +197,7 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
 	time_dif = dest_time - origin_time
 	time.append(time_dif)
 	# print("Time between stops is: ", time)
+	conn.close()
 	engine.dispose()
 	return jsonify(time=time)
 
@@ -220,6 +224,7 @@ def get_map_route(origin_id, destination_id, jpid):
 						) AND year = 2012".format(o_distance['position_on_route'], d_distance['position_on_route'], "'" + jpid + "'"))
 	for row in rows:
 		stops.append(dict(row))
+	conn.close()
 	engine.dispose()
 	return jsonify(stops=stops)
 

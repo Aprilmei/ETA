@@ -187,12 +187,14 @@ function travelTime() {
     var origin = document.getElementById("origin").value;
     var dest = document.getElementById("dest").value;
     var date_time = document.getElementById('date_time_selector').value;
-    var date_split = date_time.match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
-    var timestamp = (new Date(date_split[1], date_split[2], date_split[3], date_split[4], date_split[5], '00').getTime() / 1000) - 2664000;
-    var hour = parseInt(date_split[4]);
-    console.log(hour);
-    var date = new Date(timestamp*1000);
+    console.log(date_time);
+    var date = new Date(date_time);
+    var time = (date.getTime() / 1000) + 3600;
+    console.log(weather_list);
+
     var day = date.getDay();
+    var hour = date.getHours();
+    //console.log(hour);
     var weekday;
     if (day === 0 || day === 1 || day === 6){
         weekday = 1;
@@ -201,21 +203,28 @@ function travelTime() {
         weekday = 0;
     }
     var jpid = document.getElementById("route").value;
-    console.log(day);
-    console.log(jpid);
-    //var day = date_time.slice(0, 10);
-    //var time = date_time.slice(11);
+
     var weather_at_time = weather_list[0];
+    var time_delta = 0;
     for (var x = 1; x < weather_list.length; x++) {
-        if (Math.abs(parseInt(weather_list[x]['dt']) - parseInt(timestamp)) < Math.abs(parseInt(weather_at_time['dt']) - parseInt(timestamp))) {
+        var check_time = (Math.abs(parseInt(weather_list[x]['dt']) - time));
+        if(check_time < Math.abs(parseInt(weather_at_time['dt']) - time)) {
             weather_at_time = weather_list[x];
+            time_delta = check_time;
         }
     }
-    //    console.log("Weather at time:", weather_at_time);
-    //    console.log(route, origin, dest, day, time);
+        console.log("Weather at time:", weather_at_time);
+        console.log("Delta =", time_delta);
+    var weather_out = "";
+    if (time_delta <= 10800){
+        weather_out = "<div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
+    }
+    else{
+        weather_out = "<div class='col-md-4'><h4>Predicted weather at " + date_time + "</h4><br><p>Selected time outside of forecast range</p><br></div>";
+    }
 
-    var i, out = "";
-    out += "<div class='row'><div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div><div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div></div>";
+    var out = "";
+    out += "<div class='row'>" + weather_out + "<div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div></div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest, jpid);
@@ -233,9 +242,8 @@ $.getJSON("http://127.0.0.1:5000/pop_map_route/" + origin_id + "/" + destination
         markersArray[i].setMap(null);
     }
     markersArray.length = 0;
-    var mapo = document.getElementById('map');
-    console.log(stops);
-    console.log(stops[0]);
+//    console.log(stops);
+//    console.log(stops[0]);
     map.setCenter(new google.maps.LatLng(stops[0]['latitude'], stops[0]['longitude']));
     map.setZoom(12);
 
