@@ -37,7 +37,9 @@ def find_routes(origin: Tuple[float, float],
     return [list(parse_route(t)) for t in transit_options]
 
 
-def k_nearest_stop_coords(lat: float, lon: float, k: int=1,
+def k_nearest_stop_coords(lat: float,
+                          lon: float,
+                          k: int=1,
                           tree: cKDTree=ALL_STOPS_TREE)\
         -> List[Tuple[float, float]]:
     """
@@ -102,8 +104,6 @@ def lines_connecting_stops(origin_stop_id: str,
 def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
         -> Generator[Dict[str, Any], None, None]:
     """
-    @yields : {busses : list(of_bus_lines), board: str(stop_id), deboard: str(stop_id)}
-
     TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
     THE NODES? CAN WE GET ALL EDGES?
     """
@@ -114,11 +114,9 @@ def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
 
     for next_stop in changes:
 
-        # Sometimes there's more than only line (edge) for any given 2 nodes
-        lines = []
-        edges = GRAPH[prev_stop][next_stop]
-        for edge in edges.values():
-            lines.append(edge['line'])
+        lines = [edge['line']
+                 for edge in graph[prev_stop][next_stop].values()]
+
         yield {
             'busses': lines,
             'board': {
@@ -132,5 +130,4 @@ def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
                 'lng': STOP_COORDS[next_stop][1]
             }
         }
-
         prev_stop = next_stop
