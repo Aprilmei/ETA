@@ -12,15 +12,15 @@ def find_routes(origin: Tuple[float, float],
                 destination: Tuple[float, float],
                 max_walk: int = 500) -> List[List[dict]]:
 
-    origin_stops = k_nearest_stop_coords(*origin, k=10)
-    destination_stops = k_nearest_stop_coords(*destination, k=10)
+    origin_stops = [
+        stop for stop in k_nearest_stop_coords(*origin, k=10)
+        if distance(origin, stop).meters <= max_walk
+    ]
 
-    # filter stops within walking distance
-    origin_stops = [os for os in origin_stops
-                    if distance(origin, os).meters <= max_walk]
-
-    destination_stops = [ds for ds in destination_stops
-                         if distance(destination, ds).meters <= max_walk]
+    destination_stops = [
+        stop for stop in k_nearest_stop_coords(*destination, k=10)
+        if distance(destination, stop).meters <= max_walk
+    ]
 
     transit_options = [
         journey_transits(stop_id(origin), stop_id(dest))
