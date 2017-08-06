@@ -1,57 +1,51 @@
+from typing import List, Tuple, Type, Generator, Dict, Any, Optional
+
 from geopy.distance import distance
 import networkx as nx
+from scipy.spatial import cKDTree
 
 from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES, STOP_COORDS
 from main import log
 
 
-def k_nearest_stop_coords(lat, lon, k=1, TREE=ALL_STOPS_TREE):
+def k_nearest_stop_coords(lat: float, 
+                          lon: float, 
+                          k: int = 1, 
+                          tree: cKDTree = ALL_STOPS_TREE)\
+                          -> List[Tuple[float, float]]:
     """Queries TREE for the K nearest neighbours for the specified lat and lon.
-
-    @params : lat  - float OR str
-              lon  - float OR str
-              k    - int (OPTIONAL. Defaults to 1)
-              TREE - scipy.spatial.cKDTree (OPTIONAL. Defaults to ALL_STOPS_TREE)
-
-    @returns [ (float(lat), float(lon)) , ...]
+    @returns : [ (float(lat), float(lon)) , ...]
     """
 
     results = []
-
     # discards euclidean distance
-    _, indexes = TREE.query((lat, lon), k=k)
+    _, indexes = tree.query((lat, lon), k=k)
 
     for idx in indexes:
-        coords = TREE.data[idx]
+        coords = tree.data[idx]
         coords = (float(coords[0]), float(coords[1]))
         results.append(coords)
 
     return results
 
 
-def stop_id_for_coords(coords, LOOKUP_DICT=COORD_STOPS):
-    """Takes coords and returns the corresponding Stop Id.
-
-    @params  : coords  - (str(lat), str(lon))
-    @returns : str
-    """
-    return LOOKUP_DICT[coords]
+def stop_id_for_coords(coords: Tuple[float, float],
+                       lookup_dict: dict = COORD_STOPS) -> str:
+    """Takes coords and returns the corresponding Stop Id."""
+    return lookup_dict[coords]
 
 
-def journey_transits(origin_stop_id, destination_stop_id,
-                     max_changes=None, GRAPH=GRAPH):
+def journey_transits(origin_stop_id: str,
+                     destination_stop_id: str,
+                     max_changes: Optional[int] = None,
+                     graph: nx.MultiGraph = GRAPH) -> List[str]:
     """Takes two stop IDs and finds the routes requiring fewest changes
     between them.
 
-    @params : origin_stop_id      - str
-              destination_stop_id - str
-              max_changes    - int (OPTIONAL. Defaults to None (infinite))
-              GRAPH          - networkx.Multigraph (OPTIONAL. Defaults to GRAPH)
-
-    @returns : [str(stopId)] - list of stops on the journey, including origin and destination
+    Returns a list of stops on the journey, including origin and destination
     """
 
-    changes = nx.shortest_path(GRAPH, origin_stop_id, destination_stop_id)
+    changes = nx.shortest_path(graph, origin_stop_id, destination_stop_id)
 
     if max_changes and len(changes) - 2 > max_changes:
         return []
@@ -59,20 +53,17 @@ def journey_transits(origin_stop_id, destination_stop_id,
     return changes
 
 
-def lines_connecting_stops(origin_stop_id, destination_stop_id, GRAPH=GRAPH):
+def lines_connecting_stops(origin_stop_id: str,
+                           destination_stop_id: str,
+                           graph: nx.MultiGraph = GRAPH) -> List[str]:
     """Takes a origin stop ID and destination stop ID, and returns a list of
-    lines that go directly from origin to destination. Assumes no bus changes
-    required (use necessary_stop_changes() first if needed)
+    lines that go directly from origin to destination. 
 
-    @ params : origin_stop_id - str
-               destination_stop_id - str
-               GRAPH - nextworkx.multigraph (OPTIONAL. Defaults to GRAPH)
-
-    @ returns : [ str( line_id ) ]
+    Assumes no bus changes required (use necessary_stop_changes() first if needed)
     """
     results = []
 
-    edges = GRAPH[origin_stop_id][destination_stop_id]
+    edges = graph[origin_stop_id][destination_stop_id]
 
     for edge in edges.values():
         results.append(edge['line'])
@@ -80,28 +71,11 @@ def lines_connecting_stops(origin_stop_id, destination_stop_id, GRAPH=GRAPH):
     return results
 
 
-def find_routes(origin, destination, max_walk=500):
-    """Takes two (lat, lon) coordinates, and finds the
-    easiest route between them.
+def find_routes(origin: Tuple[float, float],
+                destination: Tuple[float, float],
+                max_walk: int = 500) -> List[List[dict]]:
 
-    returns : a list of list of dictionaries.
-    eg:
-        [
-            [{
-            'busses': ['65_I', '65b_I'],
-            'board': {
-                'id': '1358',
-                'lat': 234234.345345,
-                'lng': 23412.1231
-            }
-            'deboard': {
-                'id': '1358',
-                'lat': 234234.345345,
-                'lng': 23412.1231
-            }
-            ...]
-        ]
-
+    """Takes two (lat, lon) coordinates, and finds the easiest route between them.
     TODO: This is damn ugly, needs refactoring
     """
 
@@ -134,17 +108,15 @@ def find_routes(origin, destination, max_walk=500):
     journey_options = [opt for opt in journey_options
                        if len(opt) == fewest_changes]
 
-    log.debug(journey_options[0])
     journey_options = [list(parse_route(opt)) for opt in journey_options]
 
-    log.debug(journey_options)
+    log.debug(journey_options[0])
     return journey_options
 
 
-def parse_route(changes, GRAPH=GRAPH):
-    """takes the graph and a list of nodes, yields a tuple of a node, and the
-    edges that link it to the next node in the list.
-    @params : changes (list)
+def parse_route(changes: List[str], graph: nx.MultiGraph = GRAPH)\
+        -> Generator[Dict[str, Any], None, None]:
+    """
     @yields : {busses : list(of_bus_lines), board: str(stop_id), deboard: str(stop_id)}
 
     TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
@@ -154,7 +126,7 @@ def parse_route(changes, GRAPH=GRAPH):
 
     changes = iter(changes)
     prev_stop = next(changes)
-    log.debug(prev_stop)
+
     for next_stop in changes:
 
         # Sometimes there's more than only line (edge) for any given 2 nodes
