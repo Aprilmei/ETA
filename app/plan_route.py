@@ -59,12 +59,14 @@ def k_nearest_stop_coords(lat: float,
     return results
 
 
-def stop_id(coords: Tuple[float, float],
-            lookup_dict: dict=COORD_STOPS) -> str:
-    """
-    Takes coords and returns the corresponding Stop Id.
-    """
-    return lookup_dict[coords]
+def stop_id(coords: Tuple[float, float], lookup: dict=COORD_STOPS) -> str:
+    """ Takes coords and returns the corresponding Stop Id. """
+    return lookup[coords]
+
+
+def stop_coords(stop_id: str, lookup: dict=STOP_COORDS) -> Tuple[float, float]:
+    """ Takes a stop id and returns correspongding coordinates. """
+    return lookup[stop_id]
 
 
 def journey_transits(origin_stop_id: str,
@@ -83,31 +85,12 @@ def journey_transits(origin_stop_id: str,
     return changes
 
 
-def lines_connecting_stops(origin_stop_id: str,
-                           destination_stop_id: str,
-                           graph: nx.MultiGraph=GRAPH) -> List[str]:
-    """
-    Takes a origin stop ID and destination stop ID, and returns a list of
-    lines that go directly from origin to destination.
-    Assumes no bus changes required (use necessary_stop_changes() first if needed)
-    """
-    results = []
-
-    edges = graph[origin_stop_id][destination_stop_id]
-
-    for edge in edges.values():
-        results.append(edge['line'])
-
-    return results
-
-
 def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
         -> Generator[Dict[str, Any], None, None]:
     """
     TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
     THE NODES? CAN WE GET ALL EDGES?
     """
-    global STOP_COORDS
 
     changes = iter(changes)
     prev_stop = next(changes)
@@ -121,13 +104,13 @@ def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
             'busses': lines,
             'board': {
                 'id': prev_stop,
-                'lat': STOP_COORDS[prev_stop][0],
-                'lng': STOP_COORDS[prev_stop][1]
+                'lat': stop_coords(prev_stop)[0],
+                'lng': stop_coords(prev_stop)[1]
             },
             'deboard': {
                 'id': next_stop,
-                'lat': STOP_COORDS[next_stop][0],
-                'lng': STOP_COORDS[next_stop][1]
+                'lat': stop_coords(next_stop)[0],
+                'lng': stop_coords(next_stop)[1]
             }
         }
         prev_stop = next_stop
