@@ -37,14 +37,12 @@ def find_routes(origin: Tuple[float, float],
     return [list(parse_route(t)) for t in transit_options]
 
 
-def k_nearest_stop_coords(lat: float,
-                          lon: float,
-                          k: int=1,
+def k_nearest_stop_coords(lat: float, lon: float, k: int=1,
                           tree: cKDTree=ALL_STOPS_TREE)\
         -> List[Tuple[float, float]]:
     """
-    Queries TREE for the K nearest neighbours for the specified lat and lon.
-    @returns : [ (float(lat), float(lon)) , ...]
+    Queries tree for the k nearest neighbours for the specified lat and lon.
+    Returns a list of (lat, lon) tuples.
     """
 
     results = []
@@ -61,7 +59,9 @@ def k_nearest_stop_coords(lat: float,
 
 def stop_id(coords: Tuple[float, float],
             lookup_dict: dict=COORD_STOPS) -> str:
-    """Takes coords and returns the corresponding Stop Id."""
+    """
+    Takes coords and returns the corresponding Stop Id.
+    """
     return lookup_dict[coords]
 
 
@@ -69,7 +69,8 @@ def journey_transits(origin_stop_id: str,
                      destination_stop_id: str,
                      max_changes: Optional[int]=None,
                      graph: nx.MultiGraph=GRAPH) -> List[str]:
-    """Takes two stop IDs and finds the routes requiring fewest changes between them.
+    """
+    Takes two stop IDs and finds the routes requiring fewest changes between them.
     Returns a list of stops on the journey, including origin and destination
     """
 
@@ -83,7 +84,8 @@ def journey_transits(origin_stop_id: str,
 def lines_connecting_stops(origin_stop_id: str,
                            destination_stop_id: str,
                            graph: nx.MultiGraph=GRAPH) -> List[str]:
-    """Takes a origin stop ID and destination stop ID, and returns a list of
+    """
+    Takes a origin stop ID and destination stop ID, and returns a list of
     lines that go directly from origin to destination.
     Assumes no bus changes required (use necessary_stop_changes() first if needed)
     """
