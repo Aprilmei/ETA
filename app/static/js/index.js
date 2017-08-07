@@ -2,6 +2,7 @@
 window.onload = function () {
     pop_origin_stops();
     get_weather();
+    pop_origin_stops_rti();
 };
 $(document).ready(function () {
     $('#origin').select2();

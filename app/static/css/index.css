@@ -1,56 +1,113 @@
 #map {
     height: 600px;
+    width: 100%;
 }
 
-#home-sections {
-    width: 100%;
-    height: 150px;
-    color: white;
-    font-size: 24px;
-    text-decoration-style: solid;
-    text-align: center;
+#wrapper {
+    position: relative;
+}
+
+#prefs {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 99;
+    width: 400px;
 }
 
 p a {
     color: white;
 }
 
-p a: hover {
+p a:hover {
     color: white;
 }
 
-#home-sections p a:hover {
-    color: #F7C331 !important;
-}
-
-#real-time-section p a {
-    color: #565656;
-}
-
-#route-planner-section {
-    height: 300px;
-    background-color: #A5A5AF;
-}
-
-#real-time-section {
-    height: 300px;
-    color: #565656;
-    background-color: #F5F5F5;
-    
-}
-
-#timetables-section {
-    height: 300px;
-    background-color: #A5A5AF;
-}
 
 #prefs {
     padding: 12px;
-    border: 1px solid #A5A5AF;
+    border: 1px solid white;
+    color: #A5A5AF;
+    background-color: white;
 }
 
 #results {
-    border-left: 1px solid #A5A5Af;
-    border-right: 1px solid #A5A5Af;
-    border-bottom: 1px solid #A5A5Af;
+    background-color: white;
+    color: #A5A5AF;
 }
+
+h4 {
+    text-decoration: solid;
+    text-decoration: underline;
+    font-size: 24pt;
+}
+
+h3 {
+    text-decoration: solid;
+    text-decoration: underline;
+    font-size: 12pt;
+}
+
+#banner {
+    background-color: #A5A5AF;
+    color: white;
+    width: 100%;
+}
+
+#explore {
+    visibility: hidden;
+}
+
+#explore ul {
+    width: 100%;
+    padding-left: 100px;
+}
+
+#explore ul li{
+    display: inline-block;
+    height: 250px;
+    width: 250px;
+    margin-top: 10px;
+    background-color: white;
+    border: 1px solid #F7C331;
+    text-align: center;
+    font-size: 16pt;
+    text-decoration: solid;
+    border-radius: 500px;
+    box-shadow: 1px 1px 1px grey;
+    padding-top: 50px;
+}
+
+#explore ul li a{
+    padding-top: 45%;
+    color: #A5A5AF;
+}
+
+#explore ul li:hover {
+    background-color: #F7C331;
+    color: #F5F5F5;
+}
+
+#explore ul li a:hover {
+    color: #F5F5F5;
+}
+
+#explore-alt h2 {
+    width: 100%;
+    background-color: #A5A5AF;
+    color: #F5F5F5;
+    padding: 5px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#explore-alt p {
+    background-color: #F5F5F5;
+    color: #A5A5AF;
+    font-size: 16pt;
+}
+
+#explore-alt p a {
+    color: #F7C331;
+}
+

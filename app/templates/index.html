@@ -9,15 +9,11 @@
 
 {% block content %}
 
-       <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-8">
-                    <div id="map"></div>
-                </div>
-                <div class="col-md-4">
-                    <div id ="prefs">
-                    <h4>Route Preferences</h4>
-                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+    <div id="wrapper">
+        <div id="map"></div>
+        <div id ="prefs">
+            <h4>Route Preferences</h4>
+            <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
 
                         <label for="origin">Origin:</label>
                         <select class="form-control" id="origin">
@@ -44,6 +40,7 @@
                         <label for="date_time_selector">Date & Time:</label>
                         <div id="date_time_select_container">
                             <input id="date_time_selector" size="16" type="text">
+                            <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                         </div>
 
                         <script>
@@ -55,27 +52,41 @@
                             );
                         </script>
 
-                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                     </div>
-                    </div>
-                    <div id="results"></div>
-                </div>
+                <div id="results"></div>
+            </div>
+    </div>
+
+
+    <div class="container-fluid">
+    <div id="explore-alt">
+        <div class="row">
+            <h2>Real Time Information</h2>
+            <div class="col-md-6">
+                    <label for="origin-realtime">Real Time Information:</label>
+                    <select class="form-control" id="origin-realtime">
+                        <option disabled="disabled" selected="selected">Select Your Stop</option>
+                    </select>
+            </div>
+            <div class="col-md-6" id="results-realtime"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Journey Planner</h2>
+                <p>Plan Your Journey With ETA's <a href="/plan_journey">Journey Planner Service</a></p>
+            </div>
+            <div class="col-md-4">
+                <h2>Real Time Information</h2>
+                <p>Find Out What Time The <a href="/rti">Next Bus Is Due</a> at Your Closest Stop</p>
+            </div>
+            <div class="col-md-4">
+                <h2>Timetables</h2>
+                <p>Check <a href="#">Timetables</a> in Advance of Your Journey</p>
             </div>
         </div>
-
-<div class="container-fluid" id="home-sections">
-    <div class="row" id="route-planner-section">
-        <div class="col-md-4" id="route-planner-section">
-            <p><a href="/plan_journey">Route Planner</a></p>
-        </div>
-        <div class="col-md-4" id="real-time-section">
-            <p><a href="/rti">Real Time Information</a></p>
-        </div>
-        <div class="col-md-4" id="timetables-section">
-            <p><a href="#">Timetables</a></p>
-        </div>
     </div>
-</div>
+    </div>
+
 
 <script>
 
@@ -233,14 +244,14 @@ function travelTime() {
         console.log("Delta =", time_delta);
     var weather_out = "";
     if (time_delta <= 10800){
-        weather_out = "<div class='col-md-4'><h4>Predicted Weather at " + date_time + "</h4><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
+        weather_out = "<div><h3>Weather Forecast at " + date_time + "</h3><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
     }
     else{
-        weather_out = "<div class='col-md-4'><h4>Predicted weather at " + date_time + "</h4><br><p>Selected time outside of forecast range</p><br></div>";
+        weather_out = "<h3>Weather Forecast at " + date_time + "</h3><br><p>Selected time outside of forecast range</p>";
     }
 
     var out = "";
-    out += "<div class='row'>" + weather_out + "<div class='col-md-4'><h4>Estimated Travel Time</h4><p id='predicted_time_p'></p></div></div>";
+    out += "<div>" + "<h3>Estimated Travel Time</h3><p id='predicted_time_p'></p>" + weather_out + "</div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest, jpid);
@@ -280,6 +291,46 @@ $.getJSON("http://127.0.0.1:5000/pop_map_route/" + origin_id + "/" + destination
 
     });
 }
+
+// This is the script from RTI page - trying to integrate with home page to see what it looks like
+
+function get_rti(stop_id) {
+        $.getJSON("https://data.dublinked.ie/cgi-bin/rtpi/realtimebusinformation?stopid=" + stop_id + "&format=json", function (data) {
+            console.log(data);
+            var results = data.results;
+            var out = data.errormessage + "<br><table style='width:50%'><th>Route</th><th>Destination</th><th>Arriving</th>";
+            for(var i = 0; i < results.length; i++){
+                out += "<tr><td>" + results[i]["route"] + "</td>";
+                out += "<td>" + results[i]["destination"] + "</td>";
+                out += "<td>" + results[i]["duetime"] + " mins</td></tr>";
+            }
+            out += "</table>";
+            document.getElementById("results-realtime").innerHTML = out;
+        }
+
+            )
+    }
+
+    function pop_origin_stops_rti() {
+    var origin_drop_rti = $('#origin-realtime');
+    $.getJSON("http://127.0.0.1:5000/stops/2017", function (data) {
+        if ('stops' in data) {
+            var stops = data.stops;
+            console.log('stops', stops);
+            _.forEach(stops, function (data) {
+                origin_drop_rti.append($('<option>', {
+                    value: data.stop_id,
+                    text: data.stop_address + " - Stop No: " + data.stop_id
+                }, '</option>'));
+            })
+        }
+    })
+}
+
+    $("#origin-realtime").change(function () {
+    get_rti($("#origin-realtime").val());
+    });
+
 
 </script>
 
