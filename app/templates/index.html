@@ -81,7 +81,7 @@
 
 function pop_origin_stops() {
     var origin_drop = $('#origin');
-    $.getJSON("http://127.0.0.1:5000/stops/2012", function (data) {
+    $.getJSON(window.serverUrl + "stops/2012", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);
@@ -97,7 +97,7 @@ function pop_origin_stops() {
 
 function pop_destination_stops(origin_id) {
     var destination_drop = $('#dest');
-    $.getJSON("http://127.0.0.1:5000/destination_stops/" + origin_id, function (data) {
+    $.getJSON(window.serverUrl + "destination_stops/" + origin_id, function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);
@@ -113,7 +113,7 @@ function pop_destination_stops(origin_id) {
 
 function pop_routes(origin_id, destination_id) {
     var routes_drop = $('#route');
-    $.getJSON("http://127.0.0.1:5000/possible_routes/" + origin_id + "/" + destination_id, function (data) {
+    $.getJSON(window.serverUrl + "possible_routes/" + origin_id + "/" + destination_id, function (data) {
         if ('routes' in data) {
             var routes = data.routes;
             console.log('routes', routes);
@@ -129,7 +129,7 @@ function pop_routes(origin_id, destination_id) {
 
 function call_model(origin_id, destination_id, weekday, hour, jpid) {
     var time_p = $('#predicted_time_p');
-    $.getJSON("http://127.0.0.1:5000/predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid, function (data) {
+    $.getJSON(window.serverUrl + "predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid, function (data) {
         if ('time' in data) {
             var time = data.time;
             console.log('time', time[0]);
@@ -250,7 +250,7 @@ function travelTime() {
 markersArray = [];
 
 function showRoute(origin_id, destination_id, jpid) {
-$.getJSON("http://127.0.0.1:5000/pop_map_route/" + origin_id + "/" + destination_id + "/" + jpid, function (data) {
+$.getJSON(window.serverUrl + "pop_map_route/" + origin_id + "/" + destination_id + "/" + jpid, function (data) {
     var stops = data.stops;
     console.log(markersArray);
 

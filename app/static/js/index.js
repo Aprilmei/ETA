@@ -1,9 +1,10 @@
 // Do these fuctions trigger on the same event?
-window.onload = function () {
+
+
+
+$(document).ready(function () {
     pop_origin_stops();
     get_weather();
-};
-$(document).ready(function () {
     $('#origin').select2();
     $('#dest').select2();
 });
