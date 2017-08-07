@@ -1,179 +1,116 @@
+from typing import List, Tuple, Type, Generator, Dict, Any, Optional
+
 from geopy.distance import distance
 import networkx as nx
+from scipy.spatial import cKDTree
 
 from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES, STOP_COORDS
 from main import log
 
 
-def k_nearest_stop_coords(lat, lon, k=1, TREE=ALL_STOPS_TREE):
-    """Queries TREE for the K nearest neighbours for the specified lat and lon.
+def find_routes(origin: Tuple[float, float],
+                destination: Tuple[float, float],
+                max_walk: int = 500) -> List[List[dict]]:
 
-    @params : lat  - float OR str
-              lon  - float OR str
-              k    - int (OPTIONAL. Defaults to 1)
-              TREE - scipy.spatial.cKDTree (OPTIONAL. Defaults to ALL_STOPS_TREE)
+    origin_stops = [
+        stop for stop in k_nearest_stop_coords(*origin, k=10)
+        if distance(origin, stop).meters <= max_walk
+    ]
 
-    @returns [ (float(lat), float(lon)) , ...]
+    destination_stops = [
+        stop for stop in k_nearest_stop_coords(*destination, k=10)
+        if distance(destination, stop).meters <= max_walk
+    ]
+
+    transit_options = [
+        journey_transits(stop_id(origin), stop_id(dest))
+        for origin in origin_stops
+        for dest in destination_stops
+    ]
+
+    # only keep the options with fewest number of changes
+    fewest_changes = len(min(transit_options, key=len))
+
+    transit_options = [t for t in transit_options
+                       if len(t) == fewest_changes]
+
+    return [list(parse_route(t)) for t in transit_options]
+
+
+def k_nearest_stop_coords(lat: float,
+                          lon: float,
+                          k: int=1,
+                          tree: cKDTree=ALL_STOPS_TREE)\
+        -> List[Tuple[float, float]]:
+    """
+    Queries tree for the k nearest neighbours for the specified lat and lon.
+    Returns a list of (lat, lon) tuples.
     """
 
     results = []
-
     # discards euclidean distance
-    _, indexes = TREE.query((lat, lon), k=k)
+    _, indexes = tree.query((lat, lon), k=k)
 
     for idx in indexes:
-        coords = TREE.data[idx]
+        coords = tree.data[idx]
         coords = (float(coords[0]), float(coords[1]))
         results.append(coords)
 
     return results
 
 
-def stop_id_for_coords(coords, LOOKUP_DICT=COORD_STOPS):
-    """Takes coords and returns the corresponding Stop Id.
+def stop_id(coords: Tuple[float, float], lookup: dict=COORD_STOPS) -> str:
+    """ Takes coords and returns the corresponding Stop Id. """
+    return lookup[coords]
 
-    @params  : coords  - (str(lat), str(lon))
-    @returns : str
+
+def stop_coords(stop_id: str, lookup: dict=STOP_COORDS) -> Tuple[float, float]:
+    """ Takes a stop id and returns correspongding coordinates. """
+    return lookup[stop_id]
+
+
+def journey_transits(origin_stop_id: str,
+                     destination_stop_id: str,
+                     max_changes: Optional[int]=None,
+                     graph: nx.MultiGraph=GRAPH) -> List[str]:
     """
-    return LOOKUP_DICT[coords]
-
-
-def journey_transits(origin_stop_id, destination_stop_id,
-                     max_changes=None, GRAPH=GRAPH):
-    """Takes two stop IDs and finds the routes requiring fewest changes
-    between them.
-
-    @params : origin_stop_id      - str
-              destination_stop_id - str
-              max_changes    - int (OPTIONAL. Defaults to None (infinite))
-              GRAPH          - networkx.Multigraph (OPTIONAL. Defaults to GRAPH)
-
-    @returns : [str(stopId)] - list of stops on the journey, including origin and destination
+    Takes two stop IDs and finds the routes requiring fewest changes between them.
+    Returns a list of stops on the journey, including origin and destination
     """
 
-    changes = nx.shortest_path(GRAPH, origin_stop_id, destination_stop_id)
+    changes = nx.shortest_path(graph, origin_stop_id, destination_stop_id)
 
     if max_changes and len(changes) - 2 > max_changes:
         return []
-
     return changes
 
 
-def lines_connecting_stops(origin_stop_id, destination_stop_id, GRAPH=GRAPH):
-    """Takes a origin stop ID and destination stop ID, and returns a list of
-    lines that go directly from origin to destination. Assumes no bus changes
-    required (use necessary_stop_changes() first if needed)
-
-    @ params : origin_stop_id - str
-               destination_stop_id - str
-               GRAPH - nextworkx.multigraph (OPTIONAL. Defaults to GRAPH)
-
-    @ returns : [ str( line_id ) ]
+def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
+        -> Generator[Dict[str, Any], None, None]:
     """
-    results = []
-
-    edges = GRAPH[origin_stop_id][destination_stop_id]
-
-    for edge in edges.values():
-        results.append(edge['line'])
-
-    return results
-
-
-def find_routes(origin, destination, max_walk=500):
-    """Takes two (lat, lon) coordinates, and finds the
-    easiest route between them.
-
-    returns : a list of list of dictionaries.
-    eg:
-        [
-            [{
-            'busses': ['65_I', '65b_I'],
-            'board': {
-                'id': '1358',
-                'lat': 234234.345345,
-                'lng': 23412.1231
-            }
-            'deboard': {
-                'id': '1358',
-                'lat': 234234.345345,
-                'lng': 23412.1231
-            }
-            ...]
-        ]
-
-    TODO: This is damn ugly, needs refactoring
-    """
-
-    origin_stops = k_nearest_stop_coords(*origin, k=10)
-    destination_stops = k_nearest_stop_coords(*destination, k=10)
-
-    # get rid of stops not within walking distance
-    origin_stops = [os for os in origin_stops
-                    if distance(origin, os).meters <= max_walk]
-
-    destination_stops = [ds for ds in destination_stops
-                         if distance(destination, ds).meters <= max_walk]
-
-    journey_options = []
-    for origin in origin_stops:
-        for destination in destination_stops:
-
-            # This will give us the stops in a journey required for fewest
-            # number of changes
-            journey_options.append(
-                journey_transits(stop_id_for_coords(origin),
-                                 stop_id_for_coords(destination)))
-
-    # only keep the options with fewest number of changes
-    fewest_changes = float('inf')
-    for opt in journey_options:
-        if len(opt) < fewest_changes:
-            fewest_changes = len(opt)
-
-    journey_options = [opt for opt in journey_options
-                       if len(opt) == fewest_changes]
-
-    log.debug(journey_options[0])
-    journey_options = [list(parse_route(opt)) for opt in journey_options]
-
-    log.debug(journey_options)
-    return journey_options
-
-
-def parse_route(changes, GRAPH=GRAPH):
-    """takes the graph and a list of nodes, yields a tuple of a node, and the
-    edges that link it to the next node in the list.
-    @params : changes (list)
-    @yields : {busses : list(of_bus_lines), board: str(stop_id), deboard: str(stop_id)}
-
     TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
     THE NODES? CAN WE GET ALL EDGES?
     """
-    global STOP_COORDS
 
     changes = iter(changes)
     prev_stop = next(changes)
-    log.debug(prev_stop)
+
     for next_stop in changes:
 
-        # Sometimes there's more than only line (edge) for any given 2 nodes
-        lines = []
-        edges = GRAPH[prev_stop][next_stop]
-        for edge in edges.values():
-            lines.append(edge['line'])
+        lines = [edge['line']
+                 for edge in graph[prev_stop][next_stop].values()]
+
         yield {
             'busses': lines,
             'board': {
                 'id': prev_stop,
-                'lat': STOP_COORDS[prev_stop][0],
-                'lng': STOP_COORDS[prev_stop][1]
+                'lat': stop_coords(prev_stop)[0],
+                'lng': stop_coords(prev_stop)[1]
             },
             'deboard': {
                 'id': next_stop,
-                'lat': STOP_COORDS[next_stop][0],
-                'lng': STOP_COORDS[next_stop][1]
+                'lat': stop_coords(next_stop)[0],
+                'lng': stop_coords(next_stop)[1]
             }
         }
-
         prev_stop = next_stop
