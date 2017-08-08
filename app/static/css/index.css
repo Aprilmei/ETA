@@ -121,6 +121,10 @@ h3 {
     background-color: #F5F5F5;
 }
 
+#explore-alt th {
+    padding-right: 15px;
+}
+
 #explore-alt tr {
     padding-right: 15px;
 }
@@ -128,4 +132,62 @@ h3 {
 #explore-alt td {
     padding-right: 15px;
 }
+
+#service-choice li {
+    list-style-type: none;
+    word-wrap: break-word;
+    line-heigh: 1.5em;
+}
+
+
+#service-choice li a {
+    display: block;
+    padding: 48px 10px 4px 10px;
+}
+
+/* Style the tab */
+div.tab {
+    overflow: hidden;
+    border: 1px solid white;
+    background-color: #F5F5F5;
+}
+
+/* Style the buttons */
+
+div.tab button {
+    background-color: #F5F5F5;
+    color: #A5A5AF;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change bk color of buttons on hover */
+div.tab button:hover {
+    background-color: #F7C331;
+    color: #F5F5F5;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    color: #F5F5F5;
+    background-color: #A5A5AF;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid white;
+    border-top: none;
+}
+
+/* Set it so that Travel Time Is Visible When Page Loads */
+#TravelTime {
+    display: block;
+}
+
 
