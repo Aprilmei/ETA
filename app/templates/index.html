@@ -9,24 +9,21 @@
 
 {% block content %}
 
-    <div id="wrapper">
-        <div id="map"></div>
-        <div id ="prefs">
-            <h4>Route Preferences</h4>
-            <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
-
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="map"></div>
+            </div>
+            <div class="col-md-3" id="prefs">
+                    <h4>Route Preferences</h4>
+                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
                         <label for="origin">Origin:</label>
                         <select class="form-control" id="origin">
-                            <option disabled="disabled" selected="selected">
-				            Select your origin
-			                </option>
+                            <option disabled="disabled" selected="selected">Select Your Origin</option>
                         </select>
-
                         <label for="dest">Destination:</label>
                         <select class="form-control" id="dest">
-                            <option disabled="disabled" selected="selected">
-				            Select your destination
-			                </option>
+                            <option disabled="disabled" selected="selected">Select your destination</option>
                         </select>
 
                         <label for="route">Route:</label>
@@ -40,7 +37,6 @@
                         <label for="date_time_selector">Date & Time:</label>
                         <div id="date_time_select_container">
                             <input id="date_time_selector" size="16" type="text">
-                            <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                         </div>
 
                         <script>
@@ -52,31 +48,30 @@
                             );
                         </script>
 
+                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                     </div>
                 <div id="results"></div>
             </div>
-    </div>
-
-
-    <div class="container-fluid">
-    <div id="explore-alt">
-        <div class="row">
-            <h2>Real Time Information</h2>
-            <div class="col-md-6">
-                    <label for="origin-realtime">Real Time Information:</label>
+            <div class="col-md-3" id="explore-alt">
+                <h4>Real Time Information</h4>
+                <label for="origin-realtime">Real Time Information:</label>
                     <select class="form-control" id="origin-realtime">
                         <option disabled="disabled" selected="selected">Select Your Stop</option>
                     </select>
+                <div id="results-realtime"></div>
             </div>
-            <div class="col-md-6" id="results-realtime"></div>
+            </div>
         </div>
+
+    <div class="container-fluid">
+    <div id="explore-alt">
         <div class="row">
             <div class="col-md-4">
                 <h2>Journey Planner</h2>
                 <p>Plan Your Journey With ETA's <a href="/plan_journey">Journey Planner Service</a></p>
             </div>
             <div class="col-md-4">
-                <h2>Real Time Information</h2>
+                <h4>Real Time Information</h4>
                 <p>Find Out What Time The <a href="/rti">Next Bus Is Due</a> at Your Closest Stop</p>
             </div>
             <div class="col-md-4">

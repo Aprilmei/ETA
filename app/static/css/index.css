@@ -7,14 +7,6 @@
     position: relative;
 }
 
-#prefs {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 99;
-    width: 400px;
-}
-
 p a {
     color: white;
 }
@@ -28,18 +20,22 @@ p a:hover {
     padding: 12px;
     border: 1px solid white;
     color: #A5A5AF;
-    background-color: white;
+    background-color: #F5F5F5;
+    margin: 0px;
+}
+
+#preferences {
 }
 
 #results {
-    background-color: white;
+    background-color: #F5F5F5;
     color: #A5A5AF;
 }
 
 h4 {
     text-decoration: solid;
     text-decoration: underline;
-    font-size: 24pt;
+    font-size: 20pt;
 }
 
 h3 {
@@ -109,5 +105,27 @@ h3 {
 
 #explore-alt p a {
     color: #F7C331;
+}
+
+#explore-alt h4 {
+    text-decoration: solid;
+    text-decoration: underline;
+    font-size: 20pt;
+    color: #A5A5AF;
+}
+
+#explore-alt {
+    padding: 12px;
+    border: 1px solid white;
+    color: #A5A5AF;
+    background-color: #F5F5F5;
+}
+
+#explore-alt tr {
+    padding-right: 15px;
+}
+
+#explore-alt td {
+    padding-right: 15px;
 }
 
