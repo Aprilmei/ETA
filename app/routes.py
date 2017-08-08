@@ -8,8 +8,7 @@ from db_tools import connect_to_database
 from os.path import dirname
 from plan_route import find_routes
 
-with open('data/sk_linear_model2', 'rb') as f:
-    loaded_model = pickle.load(f)
+from data_loader import loaded_model
 
 
 @app.route("/")
