@@ -316,3 +316,45 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
     engine.dispose()
     print(time)
     return jsonify(time=time)
+
+@app.route("/timetable/<line_id>")
+@cross_origin()
+def timetable(line_id):
+
+    engine = connect_to_database()
+    conn = engine.connect()
+    line_inf = []
+    
+    line_query = conn.execute("SELECT * FROM timetables WHERE line = {} ".format("'" + line_id + "'"))
+    
+
+    for i in line_query:
+        line_inf.append(dict(i))
+    
+    
+    jour_id={}
+
+
+    for i in line_inf:
+        #m=dict((k, i[k]) for k in ('journey_pattern', 'first_stop', 'last_stop'))
+        n={i['journey_pattern']:[i['first_stop'],i['last_stop']]}
+        d_time=i['departure_time']
+        d_time = str((datetime.min+d_time).time())
+        i['departure_time']=d_time
+        jour_id.update(n)
+        
+    #print("line information is ",line_inf)
+        
+    #print("Jour_id are ",jour_id)
+    
+    for key in jour_id:
+        stops=tuple(jour_id[key])
+        stop_address = conn.execute("SELECT stop_address FROM eta.bus_stops WHERE year = 2012 AND stop_id in {};".format(stops))
+        for s in stop_address:
+            jour_id[key].append(s['stop_address'])
+            
+    #print("Stop address are ",jour_id)
+    
+        
+    #return line_inf
+    return jsonify(line_inf=line_inf,stop_address=jour_id)
