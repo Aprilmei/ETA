@@ -13,7 +13,7 @@ from plan_route import find_routes
 
 
 
-from data_loader import loaded_model
+from data_loader import loaded_model, loaded_model_weather, loaded_model_without_weather
 
 
 
@@ -151,10 +151,10 @@ def get_possible_routes(origin_id, destination_id):
     return jsonify(routes=returned_routes)
 
 
-@app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/<jpid>")
+@app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/<jpid>/<rain>")
 @cross_origin()
-def predict_time(origin_id, destination_id, weekday, hour, jpid):
-
+def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
+    rain = float(rain)
     engine = connect_to_database()
     conn = engine.connect()
     o_distance = {}
@@ -181,7 +181,7 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
     # print("O distance", origin_distance)
     # print("D distance", destination_distance)
 
-    def get_time(distance, weekday, hour):
+    def get_time(distance, weekday, hour, rain):
         # params = [{
         #   'Distance_Terminal': distance,
         # 	'midweek': weekday,
@@ -189,13 +189,16 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid):
         # }]
         #
         # df = pd.DataFrame(params)
+        if rain > -1:
+            estimated_time = loaded_model_weather.predict([distance, weekday, hour, rain])
+        else:
+            estimated_time = loaded_model_without_weather.predict([distance, weekday, hour])
 
-        estimated_time = loaded_model.predict([distance, weekday, hour])
         # print(estimated_time)
         return estimated_time[0]
 
-    origin_time = get_time(origin_distance, weekday, hour)
-    dest_time = get_time(destination_distance, weekday, hour)
+    origin_time = get_time(origin_distance, weekday, hour, rain)
+    dest_time = get_time(destination_distance, weekday, hour, rain)
 
     # print("Time to start:", origin_time)
     # print("Time to destination:", dest_time)

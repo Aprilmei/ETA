@@ -10,7 +10,7 @@
 
     <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6" id="prefs">
+        <div class="col-md-3" id="prefs">
             <div class="tab">
                 <button class="tablinks" id="tt_btn" onclick="openService(event, 'TravelTime')">Travel Time</button>
                 <button class="tablinks" id="rti_btn" onclick="openService(event, 'RealTime')">Real Time</button>
@@ -68,26 +68,12 @@
         <div class="col-md-6">
             <div id="map"></div>
         </div>
-    </div>
-
-    <div class="container-fluid">
-    <div id="explore-alt">
-        <div class="row">
-            <div class="col-md-4">
-                <h2>Journey Planner</h2>
-                <p>Plan Your Journey With ETA's <a href="/plan_journey">Journey Planner Service</a></p>
-            </div>
-            <div class="col-md-4">
-                <h4>Real Time Information</h4>
-                <p>Find Out What Time The <a href="/rti">Next Bus Is Due</a> at Your Closest Stop</p>
-            </div>
-            <div class="col-md-4">
-                <h2>Timetables</h2>
-                <p>Check <a href="#">Timetables</a> in Advance of Your Journey</p>
-            </div>
+        <div class="col-md-3" id="twitter-feed">
+            <a class="twitter-timeline" href="https://twitter.com/dublinbusnews" data-tweet-limit="3">Tweets via Dublin Bus</a>
+            <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>
     </div>
-    </div>
+
 
 
 <script>
@@ -140,9 +126,9 @@ function pop_routes(origin_id, destination_id) {
     })
 }
 
-function call_model(origin_id, destination_id, weekday, hour, jpid) {
+function call_model(origin_id, destination_id, weekday, hour, jpid, rain) {
     var time_p = $('#predicted_time_p');
-    $.getJSON(window.serverUrl + "predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid, function (data) {
+    $.getJSON(window.serverUrl + "predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid + "/" + rain, function (data) {
         if ('time' in data) {
             var time = data.time;
             console.log('time', time[0]);
@@ -225,7 +211,7 @@ function travelTime() {
     var hour = date.getHours();
     //console.log(hour);
     var weekday;
-    if (day === 0 || day === 1 || day === 6){
+    if (day === 1 || day === 6){
         weekday = 1;
     }
     else{
@@ -246,10 +232,12 @@ function travelTime() {
         console.log("Delta =", time_delta);
     var weather_out = "";
     if (time_delta <= 10800){
+        var rain = weather_at_time['main']['humidity'];
         weather_out = "<div><h3>Weather Forecast at " + date_time + "</h3><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
     }
     else{
         weather_out = "<h3>Weather Forecast at " + date_time + "</h3><br><p>Selected time outside of forecast range</p>";
+        var rain = -1;
     }
 
     var out = "";
@@ -257,7 +245,7 @@ function travelTime() {
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest, jpid);
-    call_model(origin, dest, weekday, hour, jpid);
+    call_model(origin, dest, weekday, hour, jpid, rain);
 }
 
 markersArray = [];

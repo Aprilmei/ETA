@@ -4,14 +4,14 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-4" id="select-div">
-            <label for=""origin">Real Time Information:</label>
+            <label for="origin">Real Time Information:</label>
             <select class="form-control" id="origin">
                 <option disabled="disabled" selected="selected">Select Your Stop</option>
             </select>
         </div>
         <div class="col-md-4" id="results"></div>
         <div class="col-md-4" id="twitter-feed">
-            <a class="twitter-timeline" href="https://twitter.com/dublinbusnews">Tweets via Dublin Bus</a>
+            <a class="twitter-timeline" href="https://twitter.com/dublinbusnews" data-tweet-limit="3">Tweets via Dublin Bus</a>
             <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>
     </div>

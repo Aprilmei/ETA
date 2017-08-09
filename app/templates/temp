@@ -1,0 +1,55 @@
+
+    ///////////////////////////
+        <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3" id="prefs">
+                    <h4>Route Preferences</h4>
+                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+                        <label for="origin">Origin:</label>
+                        <select class="form-control" id="origin">
+                            <option disabled="disabled" selected="selected">Select Your Origin</option>
+                        </select>
+                        <label for="dest">Destination:</label>
+                        <select class="form-control" id="dest">
+                            <option disabled="disabled" selected="selected">Select your destination</option>
+                        </select>
+
+                        <label for="route">Route:</label>
+                        <select class="form-control" id="route">
+                           <option disabled="disabled" selected="selected">
+				            Select a route
+			                </option>
+                        </select>
+
+
+                        <label for="date_time_selector">Date & Time:</label>
+                        <div id="date_time_select_container">
+                            <input id="date_time_selector" size="16" type="text">
+                        </div>
+
+                        <script>
+                            $("#date_time_selector").flatpickr({
+                                minDate: "today",
+                                enableTime: true,
+                                maxDate: new Date().fp_incr(7)
+                            }
+                            );
+                        </script>
+
+                        <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
+                    </div>
+                <div id="results"></div>
+            </div>
+            <div class="col-md-3" id="explore-alt">
+                <h4>Real Time Information</h4>
+                <label for="origin-realtime">Real Time Information:</label>
+                    <select class="form-control" id="origin-realtime">
+                        <option disabled="disabled" selected="selected">Select Your Stop</option>
+                    </select>
+                <div id="results-realtime"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
