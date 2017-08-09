@@ -270,16 +270,18 @@ def get_map_route(origin_id, destination_id, jpid):
     conn.close()
     engine.dispose()
     return jsonify(stops=stops)
+   
+   
 
-
-@app.route("/first_bus/<int:origin_id>/<int:weekday>/<int:hour>/<int:mins>/<jpid>")
+@app.route("/first_bus/<int:origin_id>/<int:weekday>/<int:hour>/<int:mins>/<route>")
 @cross_origin()
-def first_bus_eat(origin_id, weekday, hour,mins, jpid):
-
+def first_bus_eat(origin_id, weekday, hour,mins, route):
     engine = connect_to_database()
     conn = engine.connect()
-    o_distance = {}
     dep_time=[]
+    jdid_all=[]
+    route=route[1:4].strip("0")
+    origin_distance=0
 
     if weekday in range(1,6):
         workday='Workday'
@@ -288,27 +290,31 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
     else:
         workday='Sunday'
     #print(workday)
-   
+    jpid_list = conn.execute("SELECT DISTINCT journey_pattern FROM timetables WHERE line = {} ;".format("'" + route + "'"))
+    for j in jpid_list:
+        jdid_all.append(j['journey_pattern'])
+    print(jdid_all)
+    jpid=jdid_all[0]
+    print(jpid)
     origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
                                         journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
-    d_time = conn.execute("SELECT departure_time FROM timetables WHERE day_category = {} AND journey_pattern = {};".format("'" + workday + "'", "'" + jpid + "'"))
+    
+    d_time = conn.execute("SELECT departure_time FROM timetables WHERE day_category = {} AND journey_pattern = {};".format("'" + workday + "'", "'" + jpid+ "'",))
     #print('the origin_distance list is ', origin_distance_list)
     print('the depareture_time is ',d_time)
+    print('origin_distance_list',origin_distance_list)
 
     for o in origin_distance_list:
-        o_distance.update(dict(o))
+        origin_distance=o['position_on_route']
 
 
     for t in d_time:
         dep_time.append(t['departure_time'])
 
-    print("o_distance:", o_distance)
+    print("o_distance:", origin_distance)
     print("departure time is :", dep_time)
 
-    origin_distance = o_distance['position_on_route']
-
-    # print("O distance", origin_distance)
-    # print("D distance", destination_distance)
+    
     if weekday in range(1,6):
         workday=0
     else:
@@ -316,7 +322,7 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
 
     def get_time(distance, weekday, hour):
 
-        estimated_time = loaded_model.predict([distance, weekday, hour])
+        estimated_time = loaded_model_without_weather.predict([distance, hour, weekday])
         # print(estimated_time)
         return estimated_time[0]
 
@@ -352,6 +358,7 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
     engine.dispose()
     print(time)
     return jsonify(time=time)
+
 
 @app.route("/timetable/<line_id>")
 @cross_origin()
