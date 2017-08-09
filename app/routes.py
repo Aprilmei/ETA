@@ -222,9 +222,9 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
         #
         # df = pd.DataFrame(params)
         if rain > -1:
-            estimated_time = loaded_model_weather.predict([distance, weekday, hour, rain])
+            estimated_time = loaded_model_weather.predict([distance, hour, weekday, rain])
         else:
-            estimated_time = loaded_model_without_weather.predict([distance, weekday, hour])
+            estimated_time = loaded_model_without_weather.predict([distance, hour, weekday])
 
         # print(estimated_time)
         return estimated_time[0]
