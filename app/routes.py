@@ -9,19 +9,51 @@ from datetime import timedelta
 from main import app, log
 from db_tools import connect_to_database
 from os.path import dirname
-from plan_route import find_routes
+from plan_route import find_routes, k_nearest_stop_coords, stop_id
 
+with open('data/sk_linear_model2', 'rb') as f:
+    loaded_model = pickle.load(f)
 
+with open('data/2012_tree.pkl', 'rb') as f:
+    coords_tree_2012 = pickle.load(f)
 
 from data_loader import loaded_model, loaded_model_weather, loaded_model_without_weather
 
+with open('data/2012_coords_to_id.pkl', 'rb') as f:
+    coords_to_id_2012 = pickle.load(f)
 
+
+@app.route("/map_pick/<lat>/<lon>")
+def map_pick_stops(lat, lon):
+    lat, lon = float(lat), float(lon)
+    x = k_nearest_stop_coords(lat, lon, 5, coords_tree_2012)
+    stops = []
+    for i in x:
+        s = stop_id(tuple(i), coords_to_id_2012)
+        stops.append(int(s))
+    return get_stops_info(tuple(stops))
+
+def get_stops_info(stop_id_list):
+    engine = connect_to_database()
+    conn = engine.connect()
+    stops = []
+
+    rows = conn.execute("SELECT stop_address, stop_id, latitude, longitude FROM eta.bus_stops WHERE \
+                        year = 2012 AND stop_id IN {};".format(stop_id_list))
+    for row in rows:
+        stops.append(dict(row))
+
+    conn.close()
+    engine.dispose()
+
+    return jsonify(stops=stops)
 
 @app.route("/")
 def index():
     # https://stackoverflow.com/questions/35246135/flask-request-script-roottojsonsafe-returns-nothing
     if not request.script_root:
         request.script_root = url_for('index', _external=True)
+
     return render_template("index.html")
 
 
@@ -59,7 +91,7 @@ def get_stops(year):
     stops = []
     if year == 2012:
         rows = conn.execute("SELECT stop_address, stop_id FROM bus_stops WHERE year = 2012 AND stop_id IN \
-			  				(SELECT stop_id FROM eta.routes) ORDER BY stop_address;")
+                            (SELECT stop_id FROM eta.routes) ORDER BY stop_address;")
     else:
         rows = conn.execute(
             "SELECT stop_address, stop_id FROM bus_stops WHERE year = 2017;")
@@ -80,7 +112,7 @@ def get_destination_stops(stop_id):
     routes = []
     returned_stops = []
     rows = conn.execute("SELECT journey_pattern, position_on_route FROM eta.routes \
-  						WHERE stop_id = {};".format(stop_id))
+                        WHERE stop_id = {};".format(stop_id))
     for row in rows:
         routes.append(dict(row))
     # print("Routes:", routes)
@@ -88,7 +120,7 @@ def get_destination_stops(stop_id):
         jpid = r['journey_pattern']
         distance = r['position_on_route']
         route_stops = conn.execute("SELECT stop_id FROM eta.routes WHERE journey_pattern = {} \
-  								   and position_on_route > {};".format("'" + jpid + "'", distance))
+                                   and position_on_route > {};".format("'" + jpid + "'", distance))
         for route_stop in route_stops:
             print(route_stop[0])
             stops.append(route_stop[0])
@@ -96,7 +128,7 @@ def get_destination_stops(stop_id):
     stops = tuple(set(stops))
     try:
         stop_rows = conn.execute("SELECT stop_address, stop_id FROM eta.bus_stops \
-								 WHERE year = 2012 AND stop_id in {} ORDER BY stop_address;".format(stops))
+                                 WHERE year = 2012 AND stop_id in {} ORDER BY stop_address;".format(stops))
         for s in stop_rows:
             returned_stops.append(dict(s))
     except:
@@ -121,8 +153,8 @@ def get_possible_routes(origin_id, destination_id):
     routes = []
     returned_routes = []
     rows = conn.execute("SELECT journey_pattern, line_id FROM eta.routes Where stop_id \
-						= {} and journey_pattern in ( SELECT journey_pattern \
-						FROM eta.routes Where stop_id = {});".format(origin_id, destination_id))
+                        = {} and journey_pattern in ( SELECT journey_pattern \
+                        FROM eta.routes Where stop_id = {});".format(origin_id, destination_id))
     for row in rows:
         routes.append(dict(row))
     for r in routes:
@@ -131,10 +163,10 @@ def get_possible_routes(origin_id, destination_id):
         o_distance = {}
         d_distance = {}
         o_rows = conn.execute("SELECT position_on_route FROM eta.routes WHERE stop_id = {} AND \
-								journey_pattern = {}".format(origin_id, "'" + jpid + "'", ))
+                                journey_pattern = {}".format(origin_id, "'" + jpid + "'", ))
 
         d_rows = conn.execute("SELECT position_on_route FROM eta.routes WHERE stop_id = {} AND \
-								journey_pattern = {}".format(destination_id, "'" + jpid + "'", ))
+                                journey_pattern = {}".format(destination_id, "'" + jpid + "'", ))
         for row in o_rows:
             o_distance.update(dict(row))
         for row in d_rows:
@@ -161,10 +193,10 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
     d_distance = {}
 
     origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
-										journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
+                                        journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
 
     destination_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
-										journey_pattern = {};".format(destination_id, "'" + jpid + "'"))
+                                        journey_pattern = {};".format(destination_id, "'" + jpid + "'"))
 
     for o in origin_distance_list:
         o_distance.update(dict(o))
@@ -220,18 +252,19 @@ def get_map_route(origin_id, destination_id, jpid):
     o_distance = {}
     d_distance = {}
     o_rows = conn.execute("SELECT position_on_route FROM eta.routes WHERE stop_id = {} AND \
-									journey_pattern = {}".format(origin_id, "'" + jpid + "'", ))
+                                    journey_pattern = {}".format(origin_id, "'" + jpid + "'", ))
 
     d_rows = conn.execute("SELECT position_on_route FROM eta.routes WHERE stop_id = {} AND \
-									journey_pattern = {}".format(destination_id, "'" + jpid + "'", ))
+                                    journey_pattern = {}".format(destination_id, "'" + jpid + "'", ))
     for row in o_rows:
         o_distance.update(dict(row))
     for row in d_rows:
         d_distance.update(dict(row))
 
     rows = conn.execute("SELECT * FROM eta.bus_stops WHERE stop_id IN(SELECT stop_id FROM eta.routes WHERE \
-						position_on_route >= {} and position_on_route <= {} and journey_pattern = {}\
-						) AND year = 2012".format(o_distance['position_on_route'], d_distance['position_on_route'], "'" + jpid + "'"))
+                        position_on_route >= {} and position_on_route <= {} and journey_pattern = {}\
+                        ) AND year = 2012".format(o_distance['position_on_route'], d_distance['position_on_route'], "'" + jpid + "'"))
+
     for row in rows:
         stops.append(dict(row))
     conn.close()
@@ -247,12 +280,12 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
     conn = engine.connect()
     o_distance = {}
     dep_time=[]
-    
+
     if weekday in range(1,6):
         workday='Workday'
     elif weekday==6:
         workday='Saturday'
-    else: 
+    else:
         workday='Sunday'
     #print(workday)
    
@@ -264,8 +297,8 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
 
     for o in origin_distance_list:
         o_distance.update(dict(o))
-        
-    
+
+
     for t in d_time:
         dep_time.append(t['departure_time'])
 
@@ -279,8 +312,8 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
     if weekday in range(1,6):
         workday=0
     else:
-        workday=1 
-    
+        workday=1
+
     def get_time(distance, weekday, hour):
 
         estimated_time = loaded_model.predict([distance, weekday, hour])
@@ -288,26 +321,26 @@ def first_bus_eat(origin_id, weekday, hour,mins, jpid):
         return estimated_time[0]
 
     origin_time = get_time(origin_distance, workday, hour)
-    
+
     travel_time=timedelta(seconds=int(origin_time))
-    
-    
+
+
     print('Travel time to origin stop is ', origin_time)
     begin_time=timedelta(hours=hour, minutes=mins, seconds=0)
-    
+
     bus_time = []
     for i in dep_time:
-# Parse the time strings
+    # Parse the time strings
         i+=travel_time
         if i>begin_time:
             bus_time.append(i)
-    
+
     print('arrive times of the bus are ', bus_time)
     First_bus=min(bus_time)
     First_bus = (datetime.min+First_bus).time()
-    
+
     print("The first bus will arrive at ",First_bus)
-    
+
     First_bus=str(First_bus)
     print(type(First_bus))
 
@@ -327,14 +360,14 @@ def timetable(line_id):
     engine = connect_to_database()
     conn = engine.connect()
     line_inf = []
-    
+
     line_query = conn.execute("SELECT * FROM timetables WHERE line = {} ".format("'" + line_id + "'"))
-    
+
 
     for i in line_query:
         line_inf.append(dict(i))
-    
-    
+
+
     jour_id={}
 
 
@@ -345,19 +378,19 @@ def timetable(line_id):
         d_time = str((datetime.min+d_time).time())
         i['departure_time']=d_time
         jour_id.update(n)
-        
+
     #print("line information is ",line_inf)
-        
+
     #print("Jour_id are ",jour_id)
-    
+
     for key in jour_id:
         stops=tuple(jour_id[key])
         stop_address = conn.execute("SELECT stop_address FROM eta.bus_stops WHERE year = 2012 AND stop_id in {};".format(stops))
         for s in stop_address:
             jour_id[key].append(s['stop_address'])
-            
+
     #print("Stop address are ",jour_id)
-    
-        
+
+
     #return line_inf
     return jsonify(line_inf=line_inf,stop_address=jour_id)

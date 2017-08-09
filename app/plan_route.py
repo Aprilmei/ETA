@@ -57,7 +57,6 @@ def k_nearest_stop_coords(lat: float,
 
     return results
 
-
 def stop_id(coords: Tuple[float, float], lookup: dict=COORD_STOPS) -> str:
     """ Takes coords and returns the corresponding Stop Id. """
     return lookup[coords]
