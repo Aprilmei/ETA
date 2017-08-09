@@ -25,6 +25,14 @@ $ python3 main.py
 
 ## Files
 
+
+### data_loader.py
+
+
+
+### db_tools.py
+
+
 ### main.py
 If `main.py` is being run directly, the following argument can be passed:
 
@@ -36,4 +44,11 @@ This defaults to `development`, which runs the application exposed on address `1
 
 `production` exposes the application using the address `0.0.0.0` allowing it to be accessed by remote clients, and exposes port `80`.
 **This usually requires root privilages**
+
+
+### plan_route.py
+
+
+### routes.py
+
 
