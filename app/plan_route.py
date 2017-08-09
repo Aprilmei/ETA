@@ -5,7 +5,6 @@ import networkx as nx
 from scipy.spatial import cKDTree
 
 from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES, STOP_COORDS
-from main import log
 
 
 def find_routes(origin: Tuple[float, float],

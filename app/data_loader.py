@@ -29,3 +29,7 @@ with open(datadir + 'all_stops_tree.pkl', 'rb') as f:
 
 with open(datadir + 'coord_stops.pkl', 'rb') as f:
     COORD_STOPS = pickle.load(f)
+
+
+with open(datadir + 'sk_linear_model2', 'rb') as f:
+    loaded_model = pickle.load(f)
