@@ -169,14 +169,7 @@ function remove_options(id, which) {
     }
 }
 
-$("#origin").change(function () {
-    remove_options('dest', 'origin');
-    remove_options('route', 'ignore');
-});
 
-$("#dest").change(function () {
-    remove_options('route', 'dest');
-});
 
 function get_weather() {
     var xmlhttp = new XMLHttpRequest();
@@ -197,11 +190,49 @@ function apply_weather(data) {
     console.log('list', weather_list);
 }
 
+function map_pick(lat, lon){
+    $.getJSON(window.serverUrl + "map_pick/" + lat + "/" + lon, function (data) {
+        if ('stops' in data){
+            var stops = data.stops;
+        }
+        //console.log(stops);
+        for(var i = 0; i < markersArray.length; i++) {
+            markersArray[i].setMap(null);
+        }
+        markersArray.length = 0;
+        _.forEach(stops, function(data){
+            var marker = new google.maps.Marker({
+            position: {
+                lat: data["latitude"],
+                lng: data["longitude"]
+            },
+            map: map,
+            title: data["stop_address"],
+            stop_number: data["stop_id"]
+        }
+        );
+            markersArray.push(marker);
+            marker.addListener('click', function(){
+                for (var i = 0; i < infoArray.length; i++){
+                    infoArray[i].close();
+                }
+                var info_content = "<div id='info_window_content'>" +
+                                    "<p>Stop Address: " + marker.title + "</p>" +
+                                    "<p>Stop Number: " + marker.stop_number + "</p>" +
+                                    "<p>Select a destination stop below!</p></div>";
+                var info_window = new google.maps.InfoWindow({
+                    content: info_content
+                });
+                info_window.open(map, marker);
+                infoArray.push(info_window);
+                var origin_list = document.getElementById('origin');
+                origin_list.value = marker.stop_number;
+                remove_options('dest', 'origin');
+                remove_options('route', 'ignore');
+            })
+    });
+})}
 
-
-//    function predictTime(route, origin, dest, day, time) {
-//    predictedTravelTime = "Predictions Coming Soon!";
-//}
 
 function travelTime() {
     //    var results = document.getElementById("preferences");
@@ -254,11 +285,12 @@ function travelTime() {
 }
 
 markersArray = [];
+infoArray = [];
 
 function showRoute(origin_id, destination_id, jpid) {
 $.getJSON(window.serverUrl + "pop_map_route/" + origin_id + "/" + destination_id + "/" + jpid, function (data) {
     var stops = data.stops;
-    console.log(markersArray);
+//    console.log(markersArray);
 
     for(var i = 0; i < markersArray.length; i++) {
         markersArray[i].setMap(null);
@@ -286,6 +318,32 @@ $.getJSON(window.serverUrl + "pop_map_route/" + origin_id + "/" + destination_id
 
     });
 }
+
+google.maps.event.addListener(map, 'click', function(event) {
+    for(var i = 0; i < markersArray.length; i++) {
+        markersArray[i].setMap(null);
+    }
+    markersArray.length = 0;
+
+    var marker = new google.maps.Marker({position: event.latLng, map: map});
+    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+    map.setCenter(new google.maps.LatLng(event.latLng.lat(), event.latLng.lng()));
+    map.setZoom(14);
+    markersArray.push(marker);
+    //console.log(event.latLng.lat(), event.latLng.lng());
+    map_pick(event.latLng.lat(), event.latLng.lng());
+
+
+});
+
+$("#origin").change(function () {
+    remove_options('dest', 'origin');
+    remove_options('route', 'ignore');
+});
+
+$("#dest").change(function () {
+    remove_options('route', 'dest');
+});
 
 // This is the script from RTI page - trying to integrate with home page to see what it looks like
 
