@@ -1,14 +1,47 @@
-window.addEventListener('load', function () {
+window.polylines = []
+window._fullJourneys = []
 
-  // this is verbose, but the text must be within it's own element to enable
-  // vertical alignment within the restults div
-  var resultsText = document.createElement('h4')
-  resultsText.innerText =
-    'Drag journey Start and Finish markers to desired locations'
-  resultsText.setAttribute('id', 'results-text')
+function drawResultsTable() {
+  document.getElementById('results').innerText = ''
 
-  document.getElementById('results').appendChild(resultsText)
-})
+  window._fullJourneys.forEach(fullJourney => {
+    var div = document.createElement('div')
+
+    fullJourney.forEach(journeySection => {
+
+      journeySection.forEach(line => {
+        div.innerText += line.stops[0].id + ' -> '
+        div.innerText += line.line + ' -> '
+        div.innerText += line.stops[line.stops.length - 1].id + ' '
+      })
+    })
+    document.getElementById('results').appendChild(div)
+  })
+
+  var groupedFullJourneys = window._fullJourneys.map(fullJourney =>
+    groupJourneyLinesByOriginDestination(fullJourney))
+  console.log(groupedFullJourneys)
+}
+
+
+function groupJourneyLinesByOriginDestination(fullJourney) {
+  console.log(fullJourney)
+  return fullJourney.reduce((acc, journeySection) => {
+    journeySection.forEach(line => {
+      var firstStop = line.stops[0].id
+      var lastStop = line.stops[line.stops.length - 1].id
+
+      if (typeof acc[firstStop] === 'undefined') {
+        acc[firstStop] = {}
+      }
+      if (typeof acc[firstStop][lastStop] === 'undefined') {
+        acc[firstStop][lastStop] = []
+      }
+      acc[firstStop][lastStop].push(line.line)
+    })
+    return acc
+  }, {})
+}
 
 
 function initMap() {
@@ -21,7 +54,6 @@ function initMap() {
       }
     }
   )
-
   window.originMarker = new google.maps.Marker({
     position: {
       lat: 53.346348,
@@ -31,7 +63,6 @@ function initMap() {
     label: "S",
     draggable: true
   })
-
   window.destinationMarker = new google.maps.Marker({
     position: {
       lat: 53.344196,
@@ -41,160 +72,76 @@ function initMap() {
     label: "F",
     draggable: true
   })
-
   window.destinationMarker.addListener('dragend', handleDragEnd)
   window.originMarker.addListener('dragend', handleDragEnd)
-
-  /*  Info windows get in the way, mabybe not neccessary?
-
-  new google.maps.InfoWindow({
-    content: "Drag to origin"
-  }).open(window.map, window.originMarker)
-
-  new google.maps.InfoWindow({
-    content: "Drag to destination"
-  }).open(window.map, window.destinationMarker)
-
-  */
 }
 
 function handleDragEnd(event) {
-  // clear existing route lines on map if they exist
-  if (typeof window.polylines !== 'undefined') {
-    window.polylines.forEach(x => x.setMap(null))
-    window.polylines = []
-  }
-
   var origin = {
     lat: window.originMarker.getPosition().lat(),
     lng: window.originMarker.getPosition().lng()
   }
-
   var destination = {
     lat: window.destinationMarker.getPosition().lat(),
     lng: window.destinationMarker.getPosition().lng()
   }
-
-  getRoutes(origin, destination)
+  postToEndpoint(
+    'get_routes',
+    JSON.stringify({
+      origin: origin,
+      destination: destination
+    }),
+    displayResults
+  )
 }
 
-function getRoutes(origin, destination) {
+
+function postToEndpoint(endpoint, body, callback) {
   var xhr = new XMLHttpRequest()
 
-  xhr.onreadystatechange = function () {
+  xhr.onreadystatechange = () => {
     if (xhr.status === 200 && xhr.readyState === 4) {
-      displayRoutes(JSON.parse(xhr.responseText))
+      callback(JSON.parse(xhr.responseText))
     }
   }
-
-  xhr.open('POST', window.serverUrl + "get_routes", true)
+  xhr.open('POST', window.serverUrl + endpoint, true)
   xhr.setRequestHeader('Content-Type', 'Application/json')
-
-  xhr.send(JSON.stringify({
-    origin: origin,
-    destination: destination
-  }))
+  xhr.send(body)
 }
 
+function randomColour() {
+  var chars = '0123456789ABCDEF'.split('')
+  var randomChar = () => chars[Math.floor(Math.random() * 17)]
 
-function displayRoutes(routes) {
-  console.log(routes)
+  var str = '#'
+  for (var i = 0; i < 6; i++) {
+    str += randomChar()
+  }
+  return str
+}
 
-  var results = document.getElementById('results')
+function displayResults(fullJourneys) {
+  window._fullJourneys = fullJourneys
+
   try {
-    results.removeChild(document.getElementById('table'))
+    window.polylines.forEach(x => x.setVisible(false))
+    window.polylines.forEach(x => x.setMap(null))
   } catch (e) { }
-  results.innerText = ''
+  window.polylines = []
 
-  results.appendChild(makeTable(routes))
-}
-
-
-function makeTable(routes) {
-
-  // create table and append to body
-  var table = document.createElement('table')
-  table.setAttribute('id', 'routes-table')
-
-  // set the table header row
-  var hRow = table.createTHead().insertRow()
-  hRow.insertCell().innerText = 'board at'
-  hRow.insertCell().innerText = 'deboard at'
-  hRow.insertCell().innerText = 'bus options'
-  hRow.setAttribute('class', 'table-header-row')
-
-  // in order to have each route in the table alternate
-  // colour to distinguish between them, evenRoute is used
-  // to set the row class attribute
-  var evenRoute = true
-  var rowClass = 'even-route'
-  routes.forEach(function (route) {
-
-    evenRoute
-      ? className = 'even-route'
-      : className = 'odd-route'
-    evenRoute = !evenRoute
-
-    route.forEach(function (routeSection) {
-      var row = table.insertRow()
-      row.setAttribute('class', className)
-
-      row.insertCell().innerText = routeSection.board.id
-      row.insertCell().innerText = routeSection.deboard.id
-
-      // concatinate all strings in routeSection.busses array
-      row.insertCell().innerText =
-        routeSection.busses.reduce(function (str, bus) {
-          return str + bus + '    '
-        }, '')
-
-      // set the journey as an attribute of the row for easy lookup
-      // for display on the map
-      row._data = {
-        board: routeSection.board,
-        deboard: routeSection.deboard
-      }
-
-      // Display the journey segment on the map when the user hoves over
-      // the appropriate row in the table
-      row.addEventListener('mouseover', function (event) {
-        // clear existing polyline
-        try {
-          window.polyline.setMap(null)
-        } catch (e) { }
-        window.polyline = null
-
-        var x = event.currentTarget
-        console.log(x)
-
-        window.polyline = new google.maps.Polyline({
-          path: [
-            new google.maps.LatLng(
-              x._data.board.lat,
-              x._data.board.lng
-            ),
-            new google.maps.LatLng(
-              x._data.deboard.lat,
-              x._data.deboard.lng
-            )
-          ],
-
-          strokeColor: "#FF0000",
+  fullJourneys.forEach(fullJourney => {
+    fullJourney.forEach(journeySection => {
+      journeySection.forEach(line => {
+        var pl = new google.maps.Polyline({
+          path: line.stops.map(x => new google.maps.LatLng(x.lat, x.lng)),
+          strokeColor: randomColour(),
           strokeOpacity: 1.0,
-          strokeWeight: 1,
+          strokeWeight: 3,
           map: window.map
         })
+        window.polylines.push(pl)
       })
-      row.addEventListener('mouseleave', clearPolyline)
     })
   })
-  return table
+  drawResultsTable()
 }
-
-// triggering this just on the row mouseleave event doesn't always work
-// when the mouse leaves the row AND the entire table
-function clearPolyline(event) {
-  window.polyline.setMap(null)
-  window.polyline = null
-}
-
