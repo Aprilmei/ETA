@@ -229,19 +229,3 @@ def get_map_route(origin_id, destination_id, jpid):
     engine.dispose()
     return jsonify(stops=stops)
 
-
-@app.route('/stops_between', methods=['POST'])
-def stops_between():
-    if not request.script_root:
-        request.script_root = url_for('index', _external=True)
-
-    stops = get_stops_between(request.json['lineId'],
-                              request.json['originId'],
-                              request.json['destinationId'])
-    stops = [{
-        'stopId': stop_id,
-        'lat': stop_coords(stop_id)[0],
-        'lng': stop_coords(stop_id)[1]
-    } for stop_id in stops]
-
-    return jsonify(stops)

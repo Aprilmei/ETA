@@ -1,49 +1,70 @@
 window.polylines = []
 window._fullJourneys = []
 
-function drawResultsTable() {
-  document.getElementById('results').innerText = ''
 
-  window._fullJourneys.forEach(fullJourney => {
-    var div = document.createElement('div')
 
-    fullJourney.forEach(journeySection => {
+/** 
+ * Objects representing bus journeys.
+ * Each BusJourney has >= 1 JourneySections (a single trip on a single bus)
+ * Each JourneySection has >= 1 LineOption (multiple lines may get you from stop x to stop y)
+*/
 
-      journeySection.forEach(line => {
-        div.innerText += line.stops[0].id + ' -> '
-        div.innerText += line.line + ' -> '
-        div.innerText += line.stops[line.stops.length - 1].id + ' '
-      })
+function LineOption(line, stops, colour) {
+  this.line = line
+  this.stops = stops
+  this.colour = colour
+
+  this.draw = function () {
+    if (typeof this.polyline !== 'undefined') {
+      this.unDraw()
+    }
+    console.log('drawing')
+
+    this.polyline = new google.maps.Polyline({
+      path: this.stops.map(x => new google.maps.LatLng(x.lat, x.lng)),
+      strokeColor: this.colour,
+      strokeOpacity: 1.0,
+      strokeWeight: 3,
+      map: window.map
     })
-    document.getElementById('results').appendChild(div)
-  })
+  }
 
-  var groupedFullJourneys = window._fullJourneys.map(fullJourney =>
-    groupJourneyLinesByOriginDestination(fullJourney))
-  console.log(groupedFullJourneys)
+  this.unDraw = () => {
+    if (typeof this.polyline !== 'undefined') {
+      this.polyline.setVisible(false)
+      this.polyline.setMap(null)
+    }
+  }
+}
+
+function JourneySection(origin, destination, lineOptions) {
+  this.origin = origin
+  this.destination = destination
+  this.lineOptions = lineOptions
+
+  this.draw = function () {
+    this.lineOptions.forEach(x => { x.draw() })
+  }
+  this.unDraw = function () {
+    this.lineOptions.forEach(x => { x.unDraw() })
+  }
+}
+
+function BusJourney(journeySections) {
+  this.journeySections = journeySections
+
+  this.draw = function () {
+    this.journeySections.forEach(x => { x.draw() })
+  }
+  this.unDraw = function () {
+    this.journeySections.forEach(x => { x.unDraw() })
+  }
 }
 
 
-function groupJourneyLinesByOriginDestination(fullJourney) {
-  console.log(fullJourney)
-  return fullJourney.reduce((acc, journeySection) => {
-    journeySection.forEach(line => {
-      var firstStop = line.stops[0].id
-      var lastStop = line.stops[line.stops.length - 1].id
-
-      if (typeof acc[firstStop] === 'undefined') {
-        acc[firstStop] = {}
-      }
-      if (typeof acc[firstStop][lastStop] === 'undefined') {
-        acc[firstStop][lastStop] = []
-      }
-      acc[firstStop][lastStop].push(line.line)
-    })
-    return acc
-  }, {})
-}
-
-
+/**
+ * Map init. 
+ */
 function initMap() {
   window.map = new google.maps.Map(
     document.getElementById('map'), {
@@ -76,6 +97,10 @@ function initMap() {
   window.originMarker.addListener('dragend', handleDragEnd)
 }
 
+
+/**
+ * Event handler for when a marker drag event ends
+ */
 function handleDragEnd(event) {
   var origin = {
     lat: window.originMarker.getPosition().lat(),
@@ -95,7 +120,11 @@ function handleDragEnd(event) {
   )
 }
 
-
+/**
+ * Sends a POST request to the endpoint of the server URL.
+ * Expects to send and receive JSON.
+ * Returns an object
+ * */
 function postToEndpoint(endpoint, body, callback) {
   var xhr = new XMLHttpRequest()
 
@@ -109,6 +138,10 @@ function postToEndpoint(endpoint, body, callback) {
   xhr.send(body)
 }
 
+
+/** 
+ * Generate a random colour!
+*/
 function randomColour() {
   var chars = '0123456789ABCDEF'.split('')
   var randomChar = () => chars[Math.floor(Math.random() * 17)]
@@ -120,28 +153,98 @@ function randomColour() {
   return str
 }
 
+/**
+ *  Parses a response from the "get_routes" server endpoint
+ *  Returns an array of BusJourney objects 
+ */
+function parseJourneyResponse(fullJourneys) {
+  return fullJourneys.map(fullJourney =>
+
+    new BusJourney(
+      fullJourney.map(journeySection => {
+
+        var lineOptions = journeySection.map(lineOption =>
+          new LineOption(lineOption.line, lineOption.stops, randomColour())
+        )
+        var origin = lineOptions[0].stops[0]
+        var destination = lineOptions[0].stops[lineOptions[0].stops.length - 1]
+
+        return new JourneySection(origin, destination, lineOptions)
+      })
+    )
+  )
+}
+
+/** 
+ * Used as the callback function to the postToEndpoint function.
+ * Displays the results on the page
+*/
 function displayResults(fullJourneys) {
-  window._fullJourneys = fullJourneys
+  if (typeof window.busJourneys !== 'undefined') {
+    window.busJourneys.forEach(x => { x.unDraw() })
+    window.busJourneys = null
+  }
 
-  try {
-    window.polylines.forEach(x => x.setVisible(false))
-    window.polylines.forEach(x => x.setMap(null))
-  } catch (e) { }
-  window.polylines = []
+  window.busJourneys = parseJourneyResponse(fullJourneys)
+  window.busJourneys.forEach(x => x.draw())
 
-  fullJourneys.forEach(fullJourney => {
-    fullJourney.forEach(journeySection => {
-      journeySection.forEach(line => {
-        var pl = new google.maps.Polyline({
-          path: line.stops.map(x => new google.maps.LatLng(x.lat, x.lng)),
-          strokeColor: randomColour(),
-          strokeOpacity: 1.0,
-          strokeWeight: 3,
-          map: window.map
-        })
-        window.polylines.push(pl)
+  drawResultsTable(window.busJourneys)
+}
+
+/**
+ * Expects an array of BusJourney objects.
+ * Draws a table representing the results and appends it to the
+ * <div id="results" /> element on the page.
+ */
+function drawResultsTable(busJourneys) {
+  document.getElementById('results').innerHTML = ''
+  var table = document.createElement('table')
+
+  // Create the table header row
+
+  var th = document.createElement('thead')
+  /*
+  var td = document.createElement('td')
+  td.innerText = 'Origin Stop Id'
+  th.appendChild(td)
+  td = document.createElement('td')
+  td.innerText = 'Destination Stop Id'
+  th.appendChild(td)
+
+  th.appendChild({ document.createElement('td').innerText = 'Line Options' })
+*/
+
+  var rowHeads = ['Origin Stop ID', 'Destination Stop ID', 'Line Options']
+  rowHeads.forEach(x => {
+    var td = document.createElement('td')
+    td.innerText = x
+    th.appendChild(td)
+  })
+
+  table.appendChild(th)
+
+  busJourneys.forEach(bj => {
+    var row = document.createElement('tr')
+    bj.journeySections.forEach(js => {
+
+      var td = document.createElement('td')
+      td.innerText = js.origin.id
+      row.appendChild(td)
+
+      td = document.createElement('td')
+      td.innerText = js.destination.id
+      row.appendChild(td)
+
+
+      js.lineOptions.forEach(lo => {
+        td = document.createElement('td')
+        td.innerText = lo.line
+        row.appendChild(td)
       })
     })
+    table.appendChild(row)
   })
-  drawResultsTable()
+  document.getElementById('results').appendChild(table)
 }
+
+
