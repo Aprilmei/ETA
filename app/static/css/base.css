@@ -8,25 +8,12 @@ body {
     background-color: #F5F5F5; /*eggshell*/
 }
 
-.navbar {
-    padding: 0px;
-    background-color: white;
+#header {
+    height: 20px;
+    color: #565656;
+    padding: 10px;
 }
-
-.navbar li:hover {
-    background-color: #A5A5AF !important;
-}
-
-#myNavbar a:hover {
-    color: white !important;
-}
-
-#myNavbar a {
-    color: #565656 !important;
-}
-
 .container {
-    margin-top: 75px !important;
     width: 100% !important;
 }
 
