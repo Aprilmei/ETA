@@ -4,7 +4,13 @@ from geopy.distance import distance
 import networkx as nx
 from scipy.spatial import cKDTree
 
+from main import log
+
 from data_loader import ALL_STOPS_TREE, COORD_STOPS, GRAPH, LINES, STOP_COORDS
+
+
+class WrongJourneyDirectionError(Exception):
+    pass
 
 
 def find_routes(origin: Tuple[float, float],
@@ -33,14 +39,40 @@ def find_routes(origin: Tuple[float, float],
     transit_options = [t for t in transit_options
                        if len(t) == fewest_changes]
 
-    return [list(parse_route(t)) for t in transit_options]
+    routes = []
+    for t in transit_options:
+        try:
+            routes.append(list(parse_route(t)))
+        except WrongJourneyDirectionError:
+            pass
+
+    return routes
+
+
+def get_stops_between(origin_id: str,
+                      destination_id: str,
+                      line_id: str,
+                      bus_lines: Dict[str, List[str]] = LINES
+                      ) -> List[Dict[str, Any]]:
+    l = bus_lines[line_id]
+
+    l = l[
+        l.index(origin_id):
+        l.index(destination_id) + 1
+    ]
+    log.debug(l)
+    return [{
+        'id': stop_id,
+        'lat': stop_coords(stop_id)[0],
+        'lng': stop_coords(stop_id)[1]
+    } for stop_id in l]
 
 
 def k_nearest_stop_coords(lat: float,
                           lon: float,
                           k: int=1,
-                          tree: cKDTree=ALL_STOPS_TREE)\
-        -> List[Tuple[float, float]]:
+                          tree: cKDTree=ALL_STOPS_TREE
+                          )-> List[Tuple[float, float]]:
     """
     Queries tree for the k nearest neighbours for the specified lat and lon.
     Returns a list of (lat, lon) tuples.
@@ -83,32 +115,37 @@ def journey_transits(origin_stop_id: str,
     return changes
 
 
-def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH)\
-        -> Generator[Dict[str, Any], None, None]:
-    """
-    TODO: THE EDGE MIGHT BE CHOSEN ARBITRARILY. WHAT IF THERE ARE > 1 EDGES BEWTEEN
-    THE NODES? CAN WE GET ALL EDGES?
-    """
+def strip_direction(line_id):
+    return line_id.split('_')[0]
+
+
+def parse_route(changes: List[str], graph: nx.MultiGraph=GRAPH
+                )-> Generator[Dict[str, Dict[str, Any]], None, None]:
 
     changes = iter(changes)
     prev_stop = next(changes)
 
     for next_stop in changes:
 
-        lines = [edge['line']
-                 for edge in graph[prev_stop][next_stop].values()]
+        lines = [
+            edge['line']
+            for edge in graph[prev_stop][next_stop].values()
+        ]
 
-        yield {
-            'busses': lines,
-            'board': {
-                'id': prev_stop,
-                'lat': stop_coords(prev_stop)[0],
-                'lng': stop_coords(prev_stop)[1]
-            },
-            'deboard': {
-                'id': next_stop,
-                'lat': stop_coords(next_stop)[0],
-                'lng': stop_coords(next_stop)[1]
+        lines_stops = [
+            {
+                'line': strip_direction(line),
+                'stops': get_stops_between(prev_stop, next_stop, line)
             }
-        }
+            for line in lines
+            # If the stops aren't visited in the right order,
+            # get_stops_between will return an empty list
+            if len(get_stops_between(prev_stop, next_stop, line)) != 0
+        ]
+
+        if not lines_stops:
+            raise WrongJourneyDirectionError
+
+        yield lines_stops
+
         prev_stop = next_stop

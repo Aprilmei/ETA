@@ -9,6 +9,7 @@ from datetime import timedelta
 from main import app, log
 from db_tools import connect_to_database
 from os.path import dirname
+<<<<<<< HEAD
 from plan_route import find_routes, k_nearest_stop_coords, stop_id
 
 with open('data/sk_linear_model2', 'rb') as f:
@@ -21,6 +22,9 @@ from data_loader import loaded_model, loaded_model_weather, loaded_model_without
 
 with open('data/2012_coords_to_id.pkl', 'rb') as f:
     coords_to_id_2012 = pickle.load(f)
+=======
+from plan_route import find_routes, stop_id, stop_coords
+>>>>>>> unstable
 
 
 @app.route("/map_pick/<lat>/<lon>")
@@ -270,6 +274,7 @@ def get_map_route(origin_id, destination_id, jpid):
     conn.close()
     engine.dispose()
     return jsonify(stops=stops)
+<<<<<<< HEAD
    
    
 
@@ -401,3 +406,6 @@ def timetable(line_id):
 
     #return line_inf
     return jsonify(line_inf=line_inf,stop_address=jour_id)
+=======
+
+>>>>>>> unstable
