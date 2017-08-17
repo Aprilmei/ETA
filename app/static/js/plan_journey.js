@@ -136,14 +136,15 @@ function postToEndpoint(endpoint, body, callback) {
   var xhr = new XMLHttpRequest()
 
   xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        callback(JSON.parse(xhr.responseText))
-      } else {
-        throw 'Connection Error: ' + endpoint + ' : ' + xhr.status
-      }
+    if (xhr.readyState !== 4) { return }
+
+    if (xhr.status === 200) {
+      callback(JSON.parse(xhr.responseText))
+    } else {
+      throw 'Connection Error: ' + endpoint + ' : ' + xhr.status
     }
   }
+
   xhr.open('POST', window.serverUrl + endpoint, true)
   xhr.setRequestHeader('Content-Type', 'Application/json')
   xhr.send(body)
