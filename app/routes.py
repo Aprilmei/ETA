@@ -33,6 +33,7 @@ def map_pick_stops(lat, lon):
         stops.append(int(s))
     return get_stops_info(tuple(stops))
 
+
 def get_stops_info(stop_id_list):
     engine = connect_to_database()
     conn = engine.connect()
@@ -47,6 +48,7 @@ def get_stops_info(stop_id_list):
     engine.dispose()
 
     return jsonify(stops=stops)
+
 
 @app.route("/")
 def index():
@@ -222,9 +224,11 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
         #
         # df = pd.DataFrame(params)
         if rain > -1:
-            estimated_time = loaded_model_weather.predict([distance, hour, weekday, rain])
+            estimated_time = loaded_model_weather.predict(
+                [distance, hour, weekday, rain])
         else:
-            estimated_time = loaded_model_without_weather.predict([distance, hour, weekday])
+            estimated_time = loaded_model_without_weather.predict(
+                [distance, hour, weekday])
 
         # print(estimated_time)
         return estimated_time[0]
@@ -272,86 +276,92 @@ def get_map_route(origin_id, destination_id, jpid):
     return jsonify(stops=stops)
 
 
-@app.route("/first_bus/<int:origin_id>/<int:weekday>/<int:hour>/<int:mins>/<jpid>")
+@app.route("/first_bus/<int:origin_id>/<int:weekday>/<int:hour>/<int:mins>/<route>")
 @cross_origin()
-def first_bus_eat(origin_id, weekday, hour,mins, jpid):
-
+def first_bus_eat(origin_id, weekday, hour, mins, route):
     engine = connect_to_database()
     conn = engine.connect()
-    o_distance = {}
-    dep_time=[]
+    dep_time = []
+    jdid_all = []
+    route = route[1:4].strip("0")
+    origin_distance = 0
 
-    if weekday in range(1,6):
-        workday='Workday'
-    elif weekday==6:
-        workday='Saturday'
+    if weekday in range(1, 6):
+        workday = 'Workday'
+    elif weekday == 6:
+        workday = 'Saturday'
     else:
-        workday='Sunday'
-    #print(workday)
-   
+        workday = 'Sunday'
+    # print(workday)
+    jpid_list = conn.execute(
+        "SELECT DISTINCT journey_pattern FROM timetables WHERE line = {} ;".format("'" + route + "'"))
+    for j in jpid_list:
+        jdid_all.append(j['journey_pattern'])
+    print(jdid_all)
+    jpid = jdid_all[0]
+    print(jpid)
     origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
                                         journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
-    d_time = conn.execute("SELECT departure_time FROM timetables WHERE day_category = {} AND journey_pattern = {};".format("'" + workday + "'", "'" + jpid + "'"))
+
+    d_time = conn.execute("SELECT departure_time FROM timetables WHERE day_category = {} AND journey_pattern = {};".format(
+        "'" + workday + "'", "'" + jpid + "'",))
     #print('the origin_distance list is ', origin_distance_list)
-    print('the depareture_time is ',d_time)
+    print('the depareture_time is ', d_time)
+    print('origin_distance_list', origin_distance_list)
 
     for o in origin_distance_list:
-        o_distance.update(dict(o))
-
+        origin_distance = o['position_on_route']
 
     for t in d_time:
         dep_time.append(t['departure_time'])
 
-    print("o_distance:", o_distance)
+    print("o_distance:", origin_distance)
     print("departure time is :", dep_time)
 
-    origin_distance = o_distance['position_on_route']
-
-    # print("O distance", origin_distance)
-    # print("D distance", destination_distance)
-    if weekday in range(1,6):
-        workday=0
+    if weekday in range(1, 6):
+        workday = 0
     else:
-        workday=1
+        workday = 1
 
     def get_time(distance, weekday, hour):
 
-        estimated_time = loaded_model.predict([distance, weekday, hour])
+        estimated_time = loaded_model_without_weather.predict(
+            [distance, hour, weekday])
         # print(estimated_time)
         return estimated_time[0]
 
     origin_time = get_time(origin_distance, workday, hour)
 
-    travel_time=timedelta(seconds=int(origin_time))
-
+    travel_time = timedelta(seconds=int(origin_time))
 
     print('Travel time to origin stop is ', origin_time)
-    begin_time=timedelta(hours=hour, minutes=mins, seconds=0)
+    begin_time = timedelta(hours=hour, minutes=mins, seconds=0)
 
     bus_time = []
     for i in dep_time:
-    # Parse the time strings
-        i+=travel_time
-        if i>begin_time:
+        # Parse the time strings
+        i += travel_time
+        if i > begin_time:
             bus_time.append(i)
 
     print('arrive times of the bus are ', bus_time)
-    First_bus=min(bus_time)
-    First_bus = (datetime.min+First_bus).time()
+    First_bus = min(bus_time)
+    First_bus = (datetime.min + First_bus).time()
 
-    print("The first bus will arrive at ",First_bus)
+    print("The first bus will arrive at ", First_bus)
 
-    First_bus=str(First_bus)
+    First_bus = str(First_bus)
     print(type(First_bus))
 
     # print("Time to start:", origin_time)
     # print("Time to destination:", dest_time)
-    time=[]
+    time = []
     time.append(First_bus)
     # print("Time between stops is: ", time)
     engine.dispose()
     print(time)
     return jsonify(time=time)
+
 
 @app.route("/timetable/<line_id>")
 @cross_origin()
@@ -361,22 +371,20 @@ def timetable(line_id):
     conn = engine.connect()
     line_inf = []
 
-    line_query = conn.execute("SELECT * FROM timetables WHERE line = {} ".format("'" + line_id + "'"))
-
+    line_query = conn.execute(
+        "SELECT * FROM timetables WHERE line = {} ".format("'" + line_id + "'"))
 
     for i in line_query:
         line_inf.append(dict(i))
 
-
-    jour_id={}
-
+    jour_id = {}
 
     for i in line_inf:
         #m=dict((k, i[k]) for k in ('journey_pattern', 'first_stop', 'last_stop'))
-        n={i['journey_pattern']:[i['first_stop'],i['last_stop']]}
-        d_time=i['departure_time']
-        d_time = str((datetime.min+d_time).time())
-        i['departure_time']=d_time
+        n = {i['journey_pattern']: [i['first_stop'], i['last_stop']]}
+        d_time = i['departure_time']
+        d_time = str((datetime.min + d_time).time())
+        i['departure_time'] = d_time
         jour_id.update(n)
 
     #print("line information is ",line_inf)
@@ -384,13 +392,13 @@ def timetable(line_id):
     #print("Jour_id are ",jour_id)
 
     for key in jour_id:
-        stops=tuple(jour_id[key])
-        stop_address = conn.execute("SELECT stop_address FROM eta.bus_stops WHERE year = 2012 AND stop_id in {};".format(stops))
+        stops = tuple(jour_id[key])
+        stop_address = conn.execute(
+            "SELECT stop_address FROM eta.bus_stops WHERE year = 2012 AND stop_id in {};".format(stops))
         for s in stop_address:
             jour_id[key].append(s['stop_address'])
 
     #print("Stop address are ",jour_id)
 
-
-    #return line_inf
-    return jsonify(line_inf=line_inf,stop_address=jour_id)
+    # return line_inf
+    return jsonify(line_inf=line_inf, stop_address=jour_id)

@@ -140,6 +140,17 @@ function call_model(origin_id, destination_id, weekday, hour, jpid, rain) {
     });
 }
 
+function first_bus(origin_id, weekday, hour, mins,route) {
+    var time_first = $('#first_bus_time_p');
+    $.getJSON(window.serverUrl + "first_bus/" + origin_id + "/"  + weekday + "/" + hour+ "/" + mins + "/" + route , function (data) {
+        if ('time' in data) {
+            var time = data.time;
+            console.log('time', time);
+            time_first.append(time)
+        }
+    });
+}
+
 
 function remove_options(id, which) {
     var list = document.getElementById(id);
@@ -241,6 +252,7 @@ function travelTime() {
 
     var day = date.getDay();
     var hour = date.getHours();
+    var mins = date.getMinutes();
     //console.log(hour);
     var weekday;
     if (day === 1 || day === 6){
@@ -273,11 +285,12 @@ function travelTime() {
     }
 
     var out = "";
-    out += "<div>" + "<h3>Estimated Travel Time</h3><p id='predicted_time_p'></p>" + weather_out + "</div>";
+    out += "<div>" + "<h3>Estimated Travel Time</h3><p id='predicted_time_p'></p>"+"<h3>First Bus will arrive at: </h3><p id='first_bus_time_p'></p>" + weather_out + "</div>";
     document.getElementById("results").innerHTML = out;
 
     showRoute(origin, dest, jpid);
     call_model(origin, dest, weekday, hour, jpid, rain);
+    first_bus(origin, day, hour, mins, route)
 }
 
 markersArray = [];
