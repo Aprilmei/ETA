@@ -1,5 +1,11 @@
-window.polylines = []
-window._fullJourneys = []
+/**
+ * plan_journey.js
+ * 
+ * Allows the users to plan journeys from origin to destination, showing if and 
+ * where they need to change busses.
+ * 
+ * Makes a POST HTTP request to the endpoint "$(window.serverUrl)/get_routes"
+ */
 
 
 
@@ -18,7 +24,6 @@ function LineOption(line, stops, colour) {
     if (typeof this.polyline !== 'undefined') {
       this.unDraw()
     }
-    console.log('drawing')
 
     this.polyline = new google.maps.Polyline({
       path: this.stops.map(x => new google.maps.LatLng(x.lat, x.lng)),
@@ -29,7 +34,7 @@ function LineOption(line, stops, colour) {
     })
   }
 
-  this.unDraw = () => {
+  this.unDraw = function () {
     if (typeof this.polyline !== 'undefined') {
       this.polyline.setVisible(false)
       this.polyline.setMap(null)
@@ -120,17 +125,23 @@ function handleDragEnd(event) {
   )
 }
 
+
 /**
  * Sends a POST request to the endpoint of the server URL.
  * Expects to send and receive JSON.
- * Returns an object
- * */
+ * If request response is successful, calls the callback function, with the
+ * parsed JSON object as an argument
+*/
 function postToEndpoint(endpoint, body, callback) {
   var xhr = new XMLHttpRequest()
 
   xhr.onreadystatechange = () => {
-    if (xhr.status === 200 && xhr.readyState === 4) {
-      callback(JSON.parse(xhr.responseText))
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        callback(JSON.parse(xhr.responseText))
+      } else {
+        throw 'Connection Error: ' + endpoint + ' : ' + xhr.status
+      }
     }
   }
   xhr.open('POST', window.serverUrl + endpoint, true)
@@ -152,6 +163,7 @@ function randomColour() {
   }
   return str
 }
+
 
 /**
  *  Parses a response from the "get_routes" server endpoint
@@ -175,6 +187,7 @@ function parseJourneyResponse(fullJourneys) {
   )
 }
 
+
 /** 
  * Used as the callback function to the postToEndpoint function.
  * Displays the results on the page
@@ -191,6 +204,7 @@ function displayResults(fullJourneys) {
   drawResultsTable(window.busJourneys)
 }
 
+
 /**
  * Expects an array of BusJourney objects.
  * Draws a table representing the results and appends it to the
@@ -201,18 +215,7 @@ function drawResultsTable(busJourneys) {
   var table = document.createElement('table')
 
   // Create the table header row
-
   var th = document.createElement('thead')
-  /*
-  var td = document.createElement('td')
-  td.innerText = 'Origin Stop Id'
-  th.appendChild(td)
-  td = document.createElement('td')
-  td.innerText = 'Destination Stop Id'
-  th.appendChild(td)
-
-  th.appendChild({ document.createElement('td').innerText = 'Line Options' })
-*/
 
   var rowHeads = ['Origin Stop ID', 'Destination Stop ID', 'Line Options']
   rowHeads.forEach(x => {
@@ -223,8 +226,10 @@ function drawResultsTable(busJourneys) {
 
   table.appendChild(th)
 
+  // Add a row for each bus journey to the table
   busJourneys.forEach(bj => {
     var row = document.createElement('tr')
+
     bj.journeySections.forEach(js => {
 
       var td = document.createElement('td')
@@ -235,7 +240,6 @@ function drawResultsTable(busJourneys) {
       td.innerText = js.destination.id
       row.appendChild(td)
 
-
       js.lineOptions.forEach(lo => {
         td = document.createElement('td')
         td.innerText = lo.line
@@ -244,6 +248,7 @@ function drawResultsTable(busJourneys) {
     })
     table.appendChild(row)
   })
+
   document.getElementById('results').appendChild(table)
 }
 
