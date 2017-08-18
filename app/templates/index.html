@@ -79,6 +79,7 @@
 
 <script>
 
+// populates origin drop down list, all stops.
 function pop_origin_stops() {
     var origin_drop = $('#origin');
     $.getJSON(window.serverUrl + "stops/2012", function (data) {
@@ -95,6 +96,7 @@ function pop_origin_stops() {
     })
 }
 
+// populates destination list based on origin selection
 function pop_destination_stops(origin_id) {
     var destination_drop = $('#dest');
     $.getJSON(window.serverUrl + "destination_stops/" + origin_id, function (data) {
@@ -111,6 +113,7 @@ function pop_destination_stops(origin_id) {
     })
 }
 
+// populates routes list, based on origin and destination selections
 function pop_routes(origin_id, destination_id) {
     var routes_drop = $('#route');
     $.getJSON(window.serverUrl + "possible_routes/" + origin_id + "/" + destination_id, function (data) {
@@ -126,7 +129,7 @@ function pop_routes(origin_id, destination_id) {
         }
     })
 }
-
+// calls predicive model, returning time estimate
 function call_model(origin_id, destination_id, weekday, hour, jpid, rain) {
     var time_p = $('#predicted_time_p');
     $.getJSON(window.serverUrl + "predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid + "/" + rain, function (data) {
@@ -151,7 +154,7 @@ function first_bus(origin_id, weekday, hour, mins,route) {
     });
 }
 
-
+// removes options from destination & routes drop downs before new ones are added in event of changed parameters
 function remove_options(id, which) {
     var list = document.getElementById(id);
     for (var i = list.length - 1; i >= 0; i--) {
@@ -175,7 +178,7 @@ function remove_options(id, which) {
 }
 
 
-
+// retrieves 5 day forecast from OpenWeatherMap.org, stores in global variable weather_list
 function get_weather() {
     var xmlhttp = new XMLHttpRequest();
     var url = "http://api.openweathermap.org/data/2.5/forecast?id=7778677&APPID=4cd167bc85dff937818ea9a5eb6fa550&units=metric";
@@ -195,6 +198,7 @@ function apply_weather(data) {
     console.log('list', weather_list);
 }
 
+// allows users to select origin stop from map & populates destination list accordingly.
 function map_pick(lat, lon){
     $.getJSON(window.serverUrl + "map_pick/" + lat + "/" + lon, function (data) {
         if ('stops' in data){
@@ -238,17 +242,17 @@ function map_pick(lat, lon){
     });
 })}
 
-
+// gathers parameters for calling the predictive model, displays results.
 function travelTime() {
     //    var results = document.getElementById("preferences");
     var route = document.getElementById("route").value;
     var origin = document.getElementById("origin").value;
     var dest = document.getElementById("dest").value;
     var date_time = document.getElementById('date_time_selector').value;
-    console.log(date_time);
+    //console.log(date_time);
     var date = new Date(date_time);
     var time = (date.getTime() / 1000) + 3600;
-    console.log(weather_list);
+    //console.log(weather_list);
 
     var day = date.getDay();
     var hour = date.getHours();
@@ -263,6 +267,7 @@ function travelTime() {
     }
     var jpid = document.getElementById("route").value;
 
+    // finds and selects closest weather forecast from 5 day forecast to user selected time/date
     var weather_at_time = weather_list[0];
     var time_delta = 0;
     for (var x = 1; x < weather_list.length; x++) {
@@ -272,9 +277,10 @@ function travelTime() {
             time_delta = check_time;
         }
     }
-        console.log("Weather at time:", weather_at_time);
-        console.log("Delta =", time_delta);
+        //console.log("Weather at time:", weather_at_time);
+        //console.log("Delta =", time_delta);
     var weather_out = "";
+    // if closest weather forecast is more than 3 hours from user selected time/date (out of forecast range), error returned to user
     if (time_delta <= 10800){
         var rain = weather_at_time['main']['humidity'];
         weather_out = "<div><h3>Weather Forecast at " + date_time + "</h3><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
@@ -345,17 +351,19 @@ google.maps.event.addListener(map, 'click', function(event) {
 
 });
 
+// listener for change in selected origin stop, calls functions to change destination stop etc.
 $("#origin").change(function () {
     remove_options('dest', 'origin');
     remove_options('route', 'ignore');
 });
 
+// listener for change in selected destination stop, calls functions to change destination stop etc.
 $("#dest").change(function () {
     remove_options('route', 'dest');
 });
 
 // This is the script from RTI page - trying to integrate with home page to see what it looks like
-
+// calls Dublinked real time information api, returns results/displays for selected stop.
 function get_rti(stop_id) {
         $.getJSON("https://data.dublinked.ie/cgi-bin/rtpi/realtimebusinformation?stopid=" + stop_id + "&format=json", function (data) {
             console.log(data);
@@ -372,7 +380,7 @@ function get_rti(stop_id) {
 
             )
     }
-
+    // populations stops list for rti function
     function pop_origin_stops_rti() {
     var origin_drop_rti = $('#origin-realtime');
     $.getJSON("http://127.0.0.1:5000/stops/2017", function (data) {
@@ -387,8 +395,9 @@ function get_rti(stop_id) {
             })
         }
     })
-}
+    }
 
+    // listening for change in selected rti stop, calls api query
     $("#origin-realtime").change(function () {
     get_rti($("#origin-realtime").val());
     });
