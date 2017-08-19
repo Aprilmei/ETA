@@ -226,9 +226,9 @@ function drawResultsTable(busJourneys) {
 
   // Create the table header row
   var th = document.createElement('thead')
-  th.setAttribute('class', 'table-header-row')
+  //th.setAttribute('class', 'table-header-row')
 
-  var rowHeads = ['Origin Stop ID', 'Destination Stop ID', 'Line Options']
+  var rowHeads = ['Board at stop', 'Deboard at stop', 'Bus Options']
   rowHeads.forEach(x => {
     var td = document.createElement('td')
     td.innerText = x
@@ -238,27 +238,23 @@ function drawResultsTable(busJourneys) {
   table.appendChild(th)
 
 
-  // alternate the class names of rows after each bus journey, so that 
-  // different sections of the same journey can share the same styling
-  var evenRoute = false
-
   busJourneys.forEach(bj => {
-    var className = evenRoute ?
-      'even-route' : 'odd-route'
-    evenRoute = !evenRoute
+    var row = document.createElement('tr')
 
-    bj.journeySections.forEach(js => {
-      var row = document.createElement('tr')
-      row.setAttribute('class', className)
-
-      row.appendChild(createCell(js.origin.id))
-      row.appendChild(createCell(js.destination.id))
-      row.appendChild(createCell(
+    row.appendChild(createCell(
+      bj.journeySections.map(js => js.origin.id).join('\n')
+    ))
+    row.appendChild(createCell(
+      bj.journeySections.map(js => js.destination.id).join('\n')
+    ))
+    row.appendChild(createCell(
+      bj.journeySections.map(js =>
         js.lineOptions.map(lo => lo.line).join(', ')
-      ))
+      ).join('\n')
+    ))
 
-      table.appendChild(row)
-    })
+    table.appendChild(row)
+
   })
 
   document.getElementById('results').appendChild(table)

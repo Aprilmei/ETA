@@ -3,29 +3,27 @@
     text-align: left;
 }
 
-.table-header-row * {
+thead * {
     background-color: #565656;
     color: white;
-    font-weight: 700;
+    font-weight: 700; 
 }
 
 tr td {
     padding: 10px;
     color: #565656;
     min-width: 30%;
+    background-color: #F5F5F5;  /* This is overloaded for even rows */
 }
 
-tr:hover {
+tr:nth-child(even) * {
+    background-color: #A5A5AF;
+}
+
+tr:hover * {
     cursor: pointer;
     background-color: #F7C331;
     color: white;
-}
-
-.even-route{
-    background-color: #A5A5AF;
-}
-.odd-route{
-    background-color: #F5F5F5;
 }
 
 #results {
