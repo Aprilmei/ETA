@@ -115,13 +115,15 @@ function handleDragEnd(event) {
     lat: window.destinationMarker.getPosition().lat(),
     lng: window.destinationMarker.getPosition().lng()
   }
+
   postToEndpoint(
     'get_routes',
     JSON.stringify({
       origin: origin,
       destination: destination
     }),
-    displayResults
+    displayResults,
+    showNoResults
   )
 }
 
@@ -131,8 +133,9 @@ function handleDragEnd(event) {
  * Expects to send and receive JSON.
  * If request response is successful, calls the callback function, with the
  * parsed JSON object as an argument
+ * If not, reject function is called with an error message as the arg
 */
-function postToEndpoint(endpoint, body, callback) {
+function postToEndpoint(endpoint, body, callback, reject) {
   var xhr = new XMLHttpRequest()
 
   xhr.onreadystatechange = () => {
@@ -141,7 +144,7 @@ function postToEndpoint(endpoint, body, callback) {
     if (xhr.status === 200) {
       callback(JSON.parse(xhr.responseText))
     } else {
-      throw 'Connection Error: ' + endpoint + ' : ' + xhr.status
+      reject('Connection Error: ' + endpoint + ' : ' + xhr.status)
     }
   }
 
@@ -171,8 +174,6 @@ function randomColour() {
  *  Returns an array of BusJourney objects 
  */
 function parseJourneyResponse(fullJourneys) {
-  console.log(fullJourneys)
-
   return fullJourneys.map(fullJourney =>
 
     new BusJourney(
@@ -190,12 +191,28 @@ function parseJourneyResponse(fullJourneys) {
   )
 }
 
+/**
+ * If no journeys were returned (either response was empty, or connection error),
+ * dissapoint the user
+ */
+function showNoResults(err) {
+  if (err) { console.log(err) }
+
+  document.getElementById('results').innerHTML = ''
+  document.getElementById('results')
+    .innerText = 'No results found 😭 '
+}
 
 /** 
  * Used as the callback function to the postToEndpoint function.
  * Displays the results on the page
 */
 function displayResults(fullJourneys) {
+  if (fullJourneys.length === 0) {
+    showNoResults()
+    return
+  }
+
   if (typeof window.busJourneys !== 'undefined') {
     window.busJourneys.forEach(x => { x.unDraw() })
     window.busJourneys = null
@@ -225,16 +242,14 @@ function drawResultsTable(busJourneys) {
   var table = document.createElement('table')
 
   // Create the table header row
-  var th = document.createElement('thead')
-  //th.setAttribute('class', 'table-header-row')
-
   var rowHeads = ['Board at stop', 'Deboard at stop', 'Bus Options']
+  var th = document.createElement('thead')
+
   rowHeads.forEach(x => {
     var td = document.createElement('td')
     td.innerText = x
     th.appendChild(td)
   })
-
   table.appendChild(th)
 
 
