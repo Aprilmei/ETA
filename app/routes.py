@@ -294,7 +294,7 @@ def first_bus_eat(origin_id, weekday, hour, mins, route):
         workday = 'Sunday'
     # print(workday)
     jpid_list = conn.execute(
-        "SELECT DISTINCT journey_pattern FROM timetables WHERE line = {} ;".format("'" + route + "'"))
+        "SELECT DISTINCT journey_pattern FROM timetables_dublin_bus WHERE line = {} ;".format("'" + route + "'"))
     for j in jpid_list:
         jdid_all.append(j['journey_pattern'])
     print(jdid_all)
@@ -303,7 +303,7 @@ def first_bus_eat(origin_id, weekday, hour, mins, route):
     origin_distance_list = conn.execute("SELECT position_on_route FROM routes WHERE stop_id = {} AND \
                                         journey_pattern = {};".format(origin_id, "'" + jpid + "'"))
 
-    d_time = conn.execute("SELECT departure_time FROM timetables WHERE day_category = {} AND journey_pattern = {};".format(
+    d_time = conn.execute("SELECT departure_time FROM timetables_dublin_bus WHERE day_category = {} AND journey_pattern = {};".format(
         "'" + workday + "'", "'" + jpid + "'",))
     #print('the origin_distance list is ', origin_distance_list)
     print('the depareture_time is ', d_time)
@@ -358,6 +358,7 @@ def first_bus_eat(origin_id, weekday, hour, mins, route):
     time = []
     time.append(First_bus)
     # print("Time between stops is: ", time)
+    conn.close()
     engine.dispose()
     print(time)
     return jsonify(time=time)
