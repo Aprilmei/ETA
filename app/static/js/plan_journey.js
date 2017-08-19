@@ -104,8 +104,10 @@ function initMap() {
 
 
 /**
- * Event handler for when a marker drag event ends
+ * Event handlers 
  */
+
+// When a marker drag event ends, query the server for routes
 function handleDragEnd(event) {
   var origin = {
     lat: window.originMarker.getPosition().lat(),
@@ -126,6 +128,19 @@ function handleDragEnd(event) {
     showNoResults
   )
 }
+
+// When user mouseovers a results table row, show the single journey
+function handleRowMouseover(event) {
+  window.busJourneys.forEach(x => x.unDraw())
+  window.busJourneys[
+    event.currentTarget.__busJourneyIndex].draw()
+}
+
+// When the user mouseleaves a results table row, show all journeys
+function handleRowMouseleave(event) {
+  window.busJourneys.forEach(x => x.draw())
+}
+
 
 
 /**
@@ -250,10 +265,13 @@ function drawResultsTable(busJourneys) {
   )
   table.appendChild(th)
 
+  // Add a row to the table for each bus journey
+  busJourneys.forEach((bj, index) => {
 
-
-  busJourneys.forEach(bj => {
     var row = document.createElement('tr')
+    row.__busJourneyIndex = index
+    row.addEventListener('mouseover', handleRowMouseover)
+    row.addEventListener('mouseleave', handleRowMouseleave)
 
     row.appendChild(createCell(
       bj.journeySections.map(js => js.origin.id).join('\n')
@@ -268,9 +286,7 @@ function drawResultsTable(busJourneys) {
     ))
 
     table.appendChild(row)
-
   })
-
   document.getElementById('results').appendChild(table)
 }
 
