@@ -225,6 +225,7 @@ function map_pick(lat, lon){
                 for (var i = 0; i < infoArray.length; i++){
                     infoArray[i].close();
                 }
+                infoArray.length = 0;
                 var info_content = "<div id='info_window_content'>" +
                                     "<p>Stop Address: " + marker.title + "</p>" +
                                     "<p>Stop Number: " + marker.stop_number + "</p>" +
@@ -383,7 +384,7 @@ function get_rti(stop_id) {
     // populations stops list for rti function
     function pop_origin_stops_rti() {
     var origin_drop_rti = $('#origin-realtime');
-    $.getJSON("http://127.0.0.1:5000/stops/2017", function (data) {
+    $.getJSON(window.serverUrl + "/stops/2017", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);
