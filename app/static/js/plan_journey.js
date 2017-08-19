@@ -171,6 +171,8 @@ function randomColour() {
  *  Returns an array of BusJourney objects 
  */
 function parseJourneyResponse(fullJourneys) {
+  console.log(fullJourneys)
+
   return fullJourneys.map(fullJourney =>
 
     new BusJourney(
@@ -205,6 +207,12 @@ function displayResults(fullJourneys) {
   drawResultsTable(window.busJourneys)
 }
 
+//convenience function for drawResultsTable()
+function createCell(innerText) {
+  var cell = document.createElement('td')
+  cell.innerText = innerText
+  return cell
+}
 
 /**
  * Expects an array of BusJourney objects.
@@ -212,11 +220,13 @@ function displayResults(fullJourneys) {
  * <div id="results" /> element on the page.
  */
 function drawResultsTable(busJourneys) {
+
   document.getElementById('results').innerHTML = ''
   var table = document.createElement('table')
 
   // Create the table header row
   var th = document.createElement('thead')
+  th.setAttribute('class', 'table-header-row')
 
   var rowHeads = ['Origin Stop ID', 'Destination Stop ID', 'Line Options']
   rowHeads.forEach(x => {
@@ -227,27 +237,28 @@ function drawResultsTable(busJourneys) {
 
   table.appendChild(th)
 
-  // Add a row for each bus journey to the table
+
+  // alternate the class names of rows after each bus journey, so that 
+  // different sections of the same journey can share the same styling
+  var evenRoute = false
+
   busJourneys.forEach(bj => {
-    var row = document.createElement('tr')
+    var className = evenRoute ?
+      'even-route' : 'odd-route'
+    evenRoute = !evenRoute
 
     bj.journeySections.forEach(js => {
+      var row = document.createElement('tr')
+      row.setAttribute('class', className)
 
-      var td = document.createElement('td')
-      td.innerText = js.origin.id
-      row.appendChild(td)
+      row.appendChild(createCell(js.origin.id))
+      row.appendChild(createCell(js.destination.id))
+      row.appendChild(createCell(
+        js.lineOptions.map(lo => lo.line).join(', ')
+      ))
 
-      td = document.createElement('td')
-      td.innerText = js.destination.id
-      row.appendChild(td)
-
-      js.lineOptions.forEach(lo => {
-        td = document.createElement('td')
-        td.innerText = lo.line
-        row.appendChild(td)
-      })
+      table.appendChild(row)
     })
-    table.appendChild(row)
   })
 
   document.getElementById('results').appendChild(table)
