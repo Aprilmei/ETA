@@ -245,12 +245,11 @@ function drawResultsTable(busJourneys) {
   var rowHeads = ['Board at stop', 'Deboard at stop', 'Bus Options']
   var th = document.createElement('thead')
 
-  rowHeads.forEach(x => {
-    var td = document.createElement('td')
-    td.innerText = x
-    th.appendChild(td)
-  })
+  rowHeads.forEach(x =>
+    th.appendChild(createCell(x))
+  )
   table.appendChild(th)
+
 
 
   busJourneys.forEach(bj => {
