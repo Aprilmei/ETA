@@ -21,7 +21,6 @@ tr:nth-child(even) * {
 }
 
 tr:hover * {
-    cursor: pointer;
     background-color: #F7C331;
     color: white;
 }

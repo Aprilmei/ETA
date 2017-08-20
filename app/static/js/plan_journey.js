@@ -213,6 +213,8 @@ function parseJourneyResponse(fullJourneys) {
 function showNoResults(err) {
   if (err) { console.log(err) }
 
+  window.busJourneys.forEach(x => x.unDraw())
+
   document.getElementById('results').innerHTML = ''
   document.getElementById('results')
     .innerText = 'No results found 😭 '
