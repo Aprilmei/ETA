@@ -94,7 +94,7 @@ def get_routes():
     destination = (request.json['destination']['lat'],
                    request.json['destination']['lng'])
 
-    return jsonify(find_routes(origin, destination, max_walk=2000))
+    return jsonify(find_routes(origin, destination, max_walk=3000))
 
 # returns information on all stops from database for a given year
 
