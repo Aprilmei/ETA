@@ -23,6 +23,8 @@ with open('data/2012_coords_to_id.pkl', 'rb') as f:
     coords_to_id_2012 = pickle.load(f)
 
 # returns, using get_stops_info(), the information on the 5 closest stops to a given lat/lon position.
+
+
 @app.route("/map_pick/<lat>/<lon>")
 def map_pick_stops(lat, lon):
     lat, lon = float(lat), float(lon)
@@ -34,6 +36,8 @@ def map_pick_stops(lat, lon):
     return get_stops_info(tuple(stops))
 
 # returns information for given stop_ids in a tuple
+
+
 def get_stops_info(stop_id_list):
     engine = connect_to_database()
     conn = engine.connect()
@@ -50,6 +54,8 @@ def get_stops_info(stop_id_list):
     return jsonify(stops=stops)
 
 # returns index.html
+
+
 @app.route("/")
 def index():
     # https://stackoverflow.com/questions/35246135/flask-request-script-roottojsonsafe-returns-nothing
@@ -59,11 +65,15 @@ def index():
     return render_template("index.html")
 
 # returns rti.html
+
+
 @app.route("/rti")
 def rti():
     return render_template("rti.html")
 
 # returns plan_journey.html
+
+
 @app.route('/plan_journey')
 def plan_journey():
     if not request.script_root:
@@ -72,6 +82,8 @@ def plan_journey():
     return render_template('plan_journey.html')
 
 # returns routes for the route planner functionality
+
+
 @app.route('/get_routes', methods=["POST"])
 def get_routes():
     log.debug(request.json)
@@ -82,9 +94,11 @@ def get_routes():
     destination = (request.json['destination']['lat'],
                    request.json['destination']['lng'])
 
-    return jsonify(find_routes(origin, destination))
+    return jsonify(find_routes(origin, destination, max_walk=2000))
 
 # returns information on all stops from database for a given year
+
+
 @app.route("/stops/<int:year>")
 @cross_origin()
 def get_stops(year):
@@ -105,6 +119,8 @@ def get_stops(year):
     return jsonify(stops=stops)
 
 # for a given origin stop, returns all destination stops reachable on any route, respecting order on route.
+
+
 @app.route("/destination_stops/<int:stop_id>")
 @cross_origin()
 def get_destination_stops(stop_id):
@@ -147,6 +163,8 @@ def get_destination_stops(stop_id):
     return jsonify(stops=returned_stops)
 
 # for given origin and destination stops, returns all routes linking the two, respecting stop order
+
+
 @app.route("/possible_routes/<int:origin_id>/<int:destination_id>")
 @cross_origin()
 def get_possible_routes(origin_id, destination_id):
@@ -185,6 +203,8 @@ def get_possible_routes(origin_id, destination_id):
     return jsonify(routes=returned_routes)
 
 # using pickled models, returns a time prediction for given parameters
+
+
 @app.route("/predict_time/<int:origin_id>/<int:destination_id>/<int:weekday>/<int:hour>/<jpid>/<rain>")
 @cross_origin()
 def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
@@ -247,6 +267,8 @@ def predict_time(origin_id, destination_id, weekday, hour, jpid, rain):
     return jsonify(time=time)
 
 # returns information on all stops from origin to destination on a route, for map visualation in index.html
+
+
 @app.route("/pop_map_route/<int:origin_id>/<int:destination_id>/<jpid>")
 @cross_origin()
 def get_map_route(origin_id, destination_id, jpid):

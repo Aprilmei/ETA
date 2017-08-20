@@ -33,6 +33,9 @@ def find_routes(origin: Tuple[float, float],
         for dest in destination_stops
     ]
 
+    # drop empty transit options TODO: fix earlier in process
+    transit_options = [t for t in transit_options if len(t) != 0]
+
     # only keep the options with fewest number of changes
     fewest_changes = len(min(transit_options, key=len))
 
@@ -88,6 +91,7 @@ def k_nearest_stop_coords(lat: float,
         results.append(coords)
 
     return results
+
 
 def stop_id(coords: Tuple[float, float], lookup: dict=COORD_STOPS) -> str:
     """ Takes coords and returns the corresponding Stop Id. """
