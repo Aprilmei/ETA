@@ -103,7 +103,19 @@ div.tab button.active {
     display: block;
 }
 
+#origin-realtime {
+    width: 200px;
+}
 
+#results-realtime td {
+    padding: 5px;
+    border: 1px solid white;
+}
+
+#results-realtime th {
+    padding: 5px 45px 15px 5px;
+    border: 1px solid white;
+}
 
 
 

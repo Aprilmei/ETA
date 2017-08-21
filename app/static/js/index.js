@@ -11,6 +11,8 @@ $(document).ready(function () {
 $(document).ready(function () {
     $('#origin').select2();
     $('#dest').select2();
+    $('#route').select2();
+    $('#origin-realtime').select2();
 });
 
 

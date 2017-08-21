@@ -19,7 +19,7 @@
             <div id="TravelTime" class="tabcontent">
                 <h3>Travel Time Calculator</h3>
                 <p>Calculate Your Travel Time</p>
-                                    <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
+                <div id="preferences" class="form-group" action="../../static/js/main.js:travelTime">
                         <label for="origin">Origin:</label>
                         <select class="form-control" id="origin">
                             <option disabled="disabled" selected="selected">Select Your Origin</option>
@@ -42,15 +42,6 @@
                             <input id="date_time_selector" size="16" type="text">
                         </div>
 
-                        <script>
-                            $("#date_time_selector").flatpickr({
-                                minDate: "today",
-                                enableTime: true,
-                                maxDate: new Date().fp_incr(7)
-                            }
-                            );
-                        </script>
-
                         <input type="button" class="btn btn-info" onclick="travelTime()" value="Submit">
                     </div>
                 <div id="results"></div>
@@ -62,6 +53,14 @@
                     <select class="form-control" id="origin-realtime">
                         <option disabled="disabled" selected="selected">Select Your Stop</option>
                     </select>
+                <script>
+                    $("#date_time_selector").flatpickr({
+                            minDate: "today",
+                            enableTime: true,
+                            maxDate: new Date().fp_incr(7)
+                        }
+                    );
+                </script>
                 <div id="results-realtime"></div>
             </div>
         </div>
