@@ -20,12 +20,32 @@
     
     <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet" type="text/css">
 
-
     {% block head %}
     {% endblock %}
 
 </head>
-
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                        </button>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/plan_journey">Route Planner</a>
+                    <li><a href="/about">About</a></li>
+                </ul>
+                <ul class="logo">
+                    <li id="logo"><img src="../static/images/etalogo_small.jpg"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 <body>
         
     <!-- Get the URL of the server (including trailing /) and attach it to the window object -->

@@ -74,7 +74,7 @@
             <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>
     </div>
-
+    </div>
 
 
 <script>
@@ -229,7 +229,7 @@ function map_pick(lat, lon){
                 var info_content = "<div id='info_window_content'>" +
                                     "<p>Stop Address: " + marker.title + "</p>" +
                                     "<p>Stop Number: " + marker.stop_number + "</p>" +
-                                    "<p>Select a destination stop below!</p></div>";
+                                    "<p>Select a destination stop from the dropdown menu</p></div>";
                 var info_window = new google.maps.InfoWindow({
                     content: info_content
                 });
@@ -278,16 +278,21 @@ function travelTime() {
             time_delta = check_time;
         }
     }
-        //console.log("Weather at time:", weather_at_time);
-        //console.log("Delta =", time_delta);
     var weather_out = "";
     // if closest weather forecast is more than 3 hours from user selected time/date (out of forecast range), error returned to user
     if (time_delta <= 10800){
-        var rain = weather_at_time['main']['humidity'];
+        // The API does not return a value for rain if there is no rain - therefore we will set it to 0
+        if ('rain' in weather_at_time) {
+            var rain = weather_at_time['rain']['3h'];
+        }
+        else {
+            var rain = 0;
+        }
         weather_out = "<div><h3>Weather Forecast at " + date_time + "</h3><p>Temperature: " + weather_at_time['main']['temp'] + "&#8451<p>Description: " + weather_at_time['weather'][0]['main'] + "</p><img src = \"http://openweathermap.org/img/w/" + weather_at_time['weather'][0]['icon'] + ".png\"</img>" + "</div>";
     }
     else{
         weather_out = "<h3>Weather Forecast at " + date_time + "</h3><br><p>Selected time outside of forecast range</p>";
+        // no rain but to keep consistent data types we set rain to -1.
         var rain = -1;
     }
 
@@ -384,7 +389,7 @@ function get_rti(stop_id) {
     // populations stops list for rti function
     function pop_origin_stops_rti() {
     var origin_drop_rti = $('#origin-realtime');
-    $.getJSON(window.serverUrl + "/stops/2017", function (data) {
+    $.getJSON(window.serverUrl + "stops/2017", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
             console.log('stops', stops);

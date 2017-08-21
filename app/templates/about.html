@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet" type="text/css">
+<script src="{{ url_for('static', filename='js/index.js') }}" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+    <div id="about-page">
+    <p>To find our more about how this project was implemented please check out our Github link: </p>
+    <div><a href="https://github.com/andaca/ETA">Github for Web App</a></div>
+    <div><a href="https://github.com/PamelaKelly/ETA_Data_Handling">Github for Data Handling</a></div>
+    </div>
+{% endblock %}

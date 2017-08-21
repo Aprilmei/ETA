@@ -37,6 +37,10 @@ def map_pick_stops(lat, lon):
 
 # returns information for given stop_ids in a tuple
 
+@app.route("/about")
+@cross_origin()
+def about():
+    return(render_template("about.html"))
 
 def get_stops_info(stop_id_list):
     engine = connect_to_database()
@@ -425,3 +429,4 @@ def timetable(line_id):
 
     # return line_inf
     return jsonify(line_inf=line_inf, stop_address=jour_id)
+
