@@ -282,7 +282,12 @@ function travelTime() {
     if (time_delta <= 10800){
         // The API does not return a value for rain if there is no rain - therefore we will set it to 0
         if ('rain' in weather_at_time) {
-            var rain = weather_at_time['rain']['3h'];
+            if ('3h' in weather_at_time['rain']) {
+                var rain = weather_at_time['rain']['3h'];
+            }
+            else {
+                var rain = 0;
+            }
         }
         else {
             var rain = 0;
