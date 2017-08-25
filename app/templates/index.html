@@ -84,7 +84,6 @@ function pop_origin_stops() {
     $.getJSON(window.serverUrl + "stops/2012", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
-            console.log('stops', stops);
             _.forEach(stops, function (data) {
                 origin_drop.append($('<option>', {
                     value: data.stop_id,
@@ -101,7 +100,6 @@ function pop_destination_stops(origin_id) {
     $.getJSON(window.serverUrl + "destination_stops/" + origin_id, function (data) {
         if ('stops' in data) {
             var stops = data.stops;
-            console.log('stops', stops);
             _.forEach(stops, function (data) {
                 destination_drop.append($('<option>', {
                     value: data.stop_id,
@@ -118,7 +116,6 @@ function pop_routes(origin_id, destination_id) {
     $.getJSON(window.serverUrl + "possible_routes/" + origin_id + "/" + destination_id, function (data) {
         if ('routes' in data) {
             var routes = data.routes;
-            console.log('routes', routes);
             _.forEach(routes, function (data) {
                 routes_drop.append($('<option>', {
                     value: data.journey_pattern,
@@ -134,7 +131,6 @@ function call_model(origin_id, destination_id, weekday, hour, jpid, rain) {
     $.getJSON(window.serverUrl + "predict_time/" + origin_id + "/" + destination_id + "/" + weekday + "/" + hour + "/" + jpid + "/" + rain, function (data) {
         if ('time' in data) {
             var time = data.time;
-            console.log('time', time[0]);
             time_p.append(
                 Math.ceil(time[0] / 60) + " minutes"
             )
@@ -147,7 +143,6 @@ function first_bus(origin_id, weekday, hour, mins,route) {
     $.getJSON(window.serverUrl + "first_bus/" + origin_id + "/"  + weekday + "/" + hour+ "/" + mins + "/" + route , function (data) {
         if ('time' in data) {
             var time = data.time;
-            console.log('time', time);
             time_first.append(time)
         }
     });
@@ -194,7 +189,6 @@ function get_weather() {
 
 function apply_weather(data) {
     weather_list = data.list;
-    console.log('list', weather_list);
 }
 
 // allows users to select origin stop from map & populates destination list accordingly.
@@ -203,7 +197,6 @@ function map_pick(lat, lon){
         if ('stops' in data){
             var stops = data.stops;
         }
-        //console.log(stops);
         for(var i = 0; i < markersArray.length; i++) {
             markersArray[i].setMap(null);
         }
@@ -249,15 +242,12 @@ function travelTime() {
     var origin = document.getElementById("origin").value;
     var dest = document.getElementById("dest").value;
     var date_time = document.getElementById('date_time_selector').value;
-    //console.log(date_time);
     var date = new Date(date_time);
     var time = (date.getTime() / 1000) + 3600;
-    //console.log(weather_list);
 
     var day = date.getDay();
     var hour = date.getHours();
     var mins = date.getMinutes();
-    //console.log(hour);
     var weekday;
     if (day === 1 || day === 6){
         weekday = 1;
@@ -315,14 +305,11 @@ infoArray = [];
 function showRoute(origin_id, destination_id, jpid) {
 $.getJSON(window.serverUrl + "pop_map_route/" + origin_id + "/" + destination_id + "/" + jpid, function (data) {
     var stops = data.stops;
-//    console.log(markersArray);
 
     for(var i = 0; i < markersArray.length; i++) {
         markersArray[i].setMap(null);
     }
     markersArray.length = 0;
-//    console.log(stops);
-//    console.log(stops[0]);
     map.setCenter(new google.maps.LatLng(stops[0]['latitude'], stops[0]['longitude']));
     map.setZoom(12);
 
@@ -355,7 +342,6 @@ google.maps.event.addListener(map, 'click', function(event) {
     map.setCenter(new google.maps.LatLng(event.latLng.lat(), event.latLng.lng()));
     map.setZoom(14);
     markersArray.push(marker);
-    //console.log(event.latLng.lat(), event.latLng.lng());
     map_pick(event.latLng.lat(), event.latLng.lng());
 
 
@@ -376,7 +362,6 @@ $("#dest").change(function () {
 // calls Dublinked real time information api, returns results/displays for selected stop.
 function get_rti(stop_id) {
         $.getJSON("https://data.dublinked.ie/cgi-bin/rtpi/realtimebusinformation?stopid=" + stop_id + "&format=json", function (data) {
-            console.log(data);
             var results = data.results;
             var out = data.errormessage + "<br><table style='width:50%'><th>Route</th><th>Destination</th><th>Arriving</th>";
             for(var i = 0; i < results.length; i++){
@@ -396,7 +381,6 @@ function get_rti(stop_id) {
     $.getJSON(window.serverUrl + "stops/2017", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
-            console.log('stops', stops);
             _.forEach(stops, function (data) {
                 origin_drop_rti.append($('<option>', {
                     value: data.stop_id,

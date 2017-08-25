@@ -29,7 +29,6 @@ function initMap() {
 function showStops() {
     $.getJSON("data/stops.json", function (stops) {
         var j = Object.keys(stops).length;
-        console.log(j);
         for (var i = 0; i <= j; i++) {
             var marker = new google.maps.Marker({
                 position: {

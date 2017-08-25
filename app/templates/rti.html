@@ -20,7 +20,6 @@
 <script>
     function get_rti(stop_id) {
         $.getJSON("https://data.dublinked.ie/cgi-bin/rtpi/realtimebusinformation?stopid=" + stop_id + "&format=json", function (data) {
-            console.log(data);
             var results = data.results;
             var out = data.errormessage + "<br><table style='width:50%'><th>Route</th><th>Destination</th><th>Arriving</th>";
             for(var i = 0; i < results.length; i++){
@@ -40,7 +39,6 @@
     $.getJSON("http://127.0.0.1:5000/stops/2017", function (data) {
         if ('stops' in data) {
             var stops = data.stops;
-            console.log('stops', stops);
             _.forEach(stops, function (data) {
                 origin_drop.append($('<option>', {
                     value: data.stop_id,
