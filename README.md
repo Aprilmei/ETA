@@ -1,4 +1,4 @@
-# Application overview and explaination of files, classes and functions
+# Application overview 
 
 ### Building and running the application
 
