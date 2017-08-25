@@ -44,10 +44,10 @@ Provides a function to facilitate connections to the database
 If `main.py` is being run directly, the following argument can be passed:
 
 ```
---environment 'development' OR 'production'
+--environment 'dev' OR 'production'
 ```
 
-This defaults to `development`, which runs the application exposed on address `127.0.0.1`, port `5000`, and sets the logging level to `DEBUG`.
+This defaults to `dev`, which runs the application exposed on address `127.0.0.1`, port `5000`, and sets the logging level to `DEBUG`.
 
 `production` exposes the application using the address `0.0.0.0` allowing it to be accessed by remote clients, and exposes port `80`.
 **This usually requires root privilages**
