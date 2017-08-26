@@ -1,4 +1,6 @@
-# Application overview 
+Github Repository: https://github.com/andaca/ETA
+
+# Application overview
 
 ### Building and running the application
 
@@ -59,6 +61,7 @@ Contains functions that impliment the route finding solution. Utilsed by functio
 
 ### routes.py
 Defines the endpoints served by Flask.
+Contains all backend functionality for enabling front end features. 
 
 
 
